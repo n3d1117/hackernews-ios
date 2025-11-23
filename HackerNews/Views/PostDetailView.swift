@@ -46,7 +46,7 @@ struct PostDetailView: View {
         }
         .navigationTitle("Post")
         .navigationBarTitleDisplayMode(.inline)
-        .task {
+        .taskOnce {
             await loadComments()
         }
     }

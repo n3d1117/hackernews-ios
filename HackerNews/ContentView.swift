@@ -49,7 +49,7 @@ struct ContentView: View {
             }
         }
         .navigationTitle("Hacker News")
-        .task {
+        .taskOnce {
             await loadStories()
         }
     }
