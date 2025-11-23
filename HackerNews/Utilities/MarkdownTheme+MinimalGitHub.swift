@@ -20,7 +20,6 @@ extension Theme {
         .paragraph { configuration in
             configuration.label
                 .fixedSize(horizontal: false, vertical: true)
-                .relativeLineSpacing(.em(0.25))
                 .markdownMargin(top: 0, bottom: 16)
         }
         .blockquote { configuration in
@@ -37,7 +36,6 @@ extension Theme {
         .codeBlock { configuration in
             ScrollView(.horizontal) {
                 configuration.label
-                    .fixedSize(horizontal: false, vertical: true)
                     .relativeLineSpacing(.em(0.225))
                     .markdownTextStyle {
                         FontFamilyVariant(.monospaced)

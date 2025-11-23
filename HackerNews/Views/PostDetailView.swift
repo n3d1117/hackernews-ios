@@ -52,19 +52,77 @@ struct PostDetailView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(story.title)
-                .font(.title3.bold())
+        Group {
             if let url = story.url {
                 Link(destination: url) {
-                    Text(url.absoluteString)
-                        .font(.subheadline)
-                        .foregroundStyle(.blue)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
+                    headerContent
                 }
+                .buttonStyle(.plain)
+            } else {
+                headerContent
             }
         }
+    }
+
+    private var headerContent: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if let domainText {
+                Text(domainText.uppercased())
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+
+            Text(story.title)
+                .font(.title3.weight(.semibold))
+                .multilineTextAlignment(.leading)
+
+            if let authorTimeText {
+                authorTimeText
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            if let statsText {
+                statsText
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var domainText: String? {
+        story.domain ?? story.url?.host ?? "news.ycombinator.com"
+    }
+
+    private var authorTimeText: Text? {
+        dotSeparated([
+            story.author.map(Text.init),
+            storyDate.map { Text($0, format: .relative(presentation: .numeric, unitsStyle: .narrow)) }
+        ].compactMap { $0 })
+    }
+
+    private var statsText: Text? {
+        dotSeparated([
+            story.points.map { Text(quantified($0, singular: "point")) },
+            story.commentsCount.map { Text(quantified($0, singular: "comment")) }
+        ].compactMap { $0 })
+    }
+
+    private var storyDate: Date? {
+        story.time.map { Date(timeIntervalSince1970: $0) }
+    }
+
+    private func dotSeparated(_ parts: [Text]) -> Text? {
+        guard var text = parts.first else { return nil }
+        for part in parts.dropFirst() {
+            text = text + Text(" \u{00b7} ") + part
+        }
+        return text
+    }
+
+    private func quantified(_ value: Int, singular: String, plural: String? = nil) -> String {
+        let pluralized = plural ?? singular + "s"
+        return "\(value) \(value == 1 ? singular : pluralized)"
     }
 
     @MainActor
@@ -111,22 +169,24 @@ private struct CommentView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     if let content = comment.content {
                         Markdown(content)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     
                     if !comment.children.isEmpty {
                         VStack(alignment: .leading, spacing: commentSpacing) {
                             ForEach(comment.children) { child in
-                                CommentView(comment: child, depth: depth + 1)
+                                CommentView(comment: child, depth: min(10, depth + 1))
                             }
                         }
                         .padding(.top, commentSpacing)
-                        .padding(.leading, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 .transition(.opacity)
             }
         }
-        .padding(.leading, CGFloat(depth) * 6)
+        .padding(.leading, depth == 0 ? 0 : 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
         .onTapGesture {
             withAnimation(.easeInOut(duration: 0.25)) {
