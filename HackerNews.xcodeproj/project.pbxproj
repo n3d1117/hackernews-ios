@@ -6,8 +6,24 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		815494272ED2661B00CC67A8 /* Routing in Frameworks */ = {isa = PBXBuildFile; productRef = 815494262ED2661B00CC67A8 /* Routing */; };
+		815494672ED283F200CC67A8 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 815494662ED283F200CC67A8 /* MarkdownUI */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		815494602ED2828500CC67A8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8133B8B22EA2EB0200B06D01 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8133B8B92EA2EB0200B06D01;
+			remoteInfo = HackerNews;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		8133B8BA2EA2EB0200B06D01 /* HackerNews.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HackerNews.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8154945C2ED2828500CC67A8 /* HackerNewsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HackerNewsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +32,24 @@
 			path = HackerNews;
 			sourceTree = "<group>";
 		};
+		8154945D2ED2828500CC67A8 /* HackerNewsTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = HackerNewsTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		8133B8B72EA2EB0200B06D01 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				815494272ED2661B00CC67A8 /* Routing in Frameworks */,
+				815494672ED283F200CC67A8 /* MarkdownUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		815494592ED2828500CC67A8 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +63,7 @@
 			isa = PBXGroup;
 			children = (
 				8133B8BC2EA2EB0200B06D01 /* HackerNews */,
+				8154945D2ED2828500CC67A8 /* HackerNewsTests */,
 				8133B8BB2EA2EB0200B06D01 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +72,7 @@
 			isa = PBXGroup;
 			children = (
 				8133B8BA2EA2EB0200B06D01 /* HackerNews.app */,
+				8154945C2ED2828500CC67A8 /* HackerNewsTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -65,10 +97,35 @@
 			);
 			name = HackerNews;
 			packageProductDependencies = (
+				815494262ED2661B00CC67A8 /* Routing */,
+				815494662ED283F200CC67A8 /* MarkdownUI */,
 			);
 			productName = HackerNews;
 			productReference = 8133B8BA2EA2EB0200B06D01 /* HackerNews.app */;
 			productType = "com.apple.product-type.application";
+		};
+		8154945B2ED2828500CC67A8 /* HackerNewsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 815494622ED2828500CC67A8 /* Build configuration list for PBXNativeTarget "HackerNewsTests" */;
+			buildPhases = (
+				815494582ED2828500CC67A8 /* Sources */,
+				815494592ED2828500CC67A8 /* Frameworks */,
+				8154945A2ED2828500CC67A8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				815494612ED2828500CC67A8 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				8154945D2ED2828500CC67A8 /* HackerNewsTests */,
+			);
+			name = HackerNewsTests;
+			packageProductDependencies = (
+			);
+			productName = HackerNewsTests;
+			productReference = 8154945C2ED2828500CC67A8 /* HackerNewsTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -77,11 +134,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2600;
-				LastUpgradeCheck = 2600;
+				LastSwiftUpdateCheck = 2610;
+				LastUpgradeCheck = 2610;
 				TargetAttributes = {
 					8133B8B92EA2EB0200B06D01 = {
 						CreatedOnToolsVersion = 26.0.1;
+					};
+					8154945B2ED2828500CC67A8 = {
+						CreatedOnToolsVersion = 26.1.1;
+						TestTargetID = 8133B8B92EA2EB0200B06D01;
 					};
 				};
 			};
@@ -94,18 +155,30 @@
 			);
 			mainGroup = 8133B8B12EA2EB0200B06D01;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				815494252ED2661B00CC67A8 /* XCRemoteSwiftPackageReference "Routing" */,
+				815494652ED283F200CC67A8 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8133B8BB2EA2EB0200B06D01 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				8133B8B92EA2EB0200B06D01 /* HackerNews */,
+				8154945B2ED2828500CC67A8 /* HackerNewsTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		8133B8B82EA2EB0200B06D01 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8154945A2ED2828500CC67A8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +195,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		815494582ED2828500CC67A8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		815494612ED2828500CC67A8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8133B8B92EA2EB0200B06D01 /* HackerNews */;
+			targetProxy = 815494602ED2828500CC67A8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		8133B8C32EA2EB0300B06D01 /* Debug */ = {
@@ -159,6 +247,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -181,6 +270,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -220,6 +310,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -235,6 +326,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -246,6 +338,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -288,6 +381,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -323,6 +417,51 @@
 			};
 			name = Release;
 		};
+		815494632ED2828500CC67A8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = it.ned.HackerNewsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HackerNews.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HackerNews";
+			};
+			name = Debug;
+		};
+		815494642ED2828500CC67A8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = it.ned.HackerNewsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HackerNews.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HackerNews";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -344,7 +483,48 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		815494622ED2828500CC67A8 /* Build configuration list for PBXNativeTarget "HackerNewsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				815494632ED2828500CC67A8 /* Debug */,
+				815494642ED2828500CC67A8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		815494252ED2661B00CC67A8 /* XCRemoteSwiftPackageReference "Routing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:n3d1117/Routing.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		815494652ED283F200CC67A8 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		815494262ED2661B00CC67A8 /* Routing */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 815494252ED2661B00CC67A8 /* XCRemoteSwiftPackageReference "Routing" */;
+			productName = Routing;
+		};
+		815494662ED283F200CC67A8 /* MarkdownUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 815494652ED283F200CC67A8 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
+			productName = MarkdownUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8133B8B22EA2EB0200B06D01 /* Project object */;
 }

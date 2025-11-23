@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import Routing
 
 @main
 struct HackerNewsApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .withRouter(\.router)
         }
     }
 }
