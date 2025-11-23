@@ -51,14 +51,14 @@ struct Comment: Identifiable, Decodable, Equatable, Hashable {
     let id: Int
     let author: String?
     let content: String?
-    let timeAgo: String?
+    let time: TimeInterval?
     let children: [Comment]
 
-    init(id: Int, author: String?, content: String?, timeAgo: String? = nil, children: [Comment]) {
+    init(id: Int, author: String?, content: String?, time: TimeInterval? = nil, children: [Comment]) {
         self.id = id
         self.author = author
         self.content = content
-        self.timeAgo = timeAgo
+        self.time = time
         self.children = children
     }
 
@@ -66,7 +66,7 @@ struct Comment: Identifiable, Decodable, Equatable, Hashable {
         case id
         case author = "user"
         case content
-        case timeAgo = "time_ago"
+        case time
         case children = "comments"
     }
 }
@@ -87,7 +87,7 @@ extension Comment {
             id: id,
             author: author,
             content: normalizedContent,
-            timeAgo: timeAgo,
+            time: time,
             children: prunedChildren
         )
     }

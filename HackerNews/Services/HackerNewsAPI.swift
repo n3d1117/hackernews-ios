@@ -52,7 +52,7 @@ struct HackerNewsAPI {
                 id: comment.id,
                 author: comment.user,
                 content: content,
-                timeAgo: comment.timeAgo,
+                time: comment.time,
                 children: children
             )
             if let pruned = node.pruned() {
@@ -118,7 +118,6 @@ private struct FeedComment: Decodable {
     let level: Int?
     let user: String?
     let time: TimeInterval?
-    let timeAgo: String?
     let content: String?
     let comments: [FeedComment]
 
@@ -127,7 +126,6 @@ private struct FeedComment: Decodable {
         case level
         case user
         case time
-        case timeAgo = "time_ago"
         case content
         case comments
     }

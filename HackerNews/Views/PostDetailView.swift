@@ -91,7 +91,7 @@ private struct CommentView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if let metaLine {
+            if let metaText {
                 HStack(spacing: 6) {
                     Image(systemName: "chevron.right")
                         .imageScale(.small)
@@ -99,7 +99,7 @@ private struct CommentView: View {
                         .frame(width: 10, alignment: .center)
                         .rotationEffect(.degrees(isCollapsed ? 0 : 90))
 
-                    Text(metaLine)
+                    metaText
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
@@ -135,16 +135,22 @@ private struct CommentView: View {
         }
     }
 
-    private var metaLine: String? {
-        switch (comment.author, comment.timeAgo) {
-        case let (author?, timeAgo?):
-            return "\(author) \u{00b7} \(timeAgo)"
+    private var metaText: Text? {
+        switch (comment.author, timestamp) {
+        case let (author?, time?):
+            Text(author)
+            + Text(" \u{00b7} ")
+            + Text(time, format: .relative(presentation: .numeric, unitsStyle: .narrow))
         case let (author?, nil):
-            return author
-        case let (nil, timeAgo?):
-            return timeAgo
+            Text(author)
+        case let (nil, time?):
+            Text(time, format: .relative(presentation: .numeric, unitsStyle: .narrow))
         default:
-            return nil
+            nil
         }
+    }
+
+    private var timestamp: Date? {
+        comment.time.map { Date(timeIntervalSince1970: $0) }
     }
 }
