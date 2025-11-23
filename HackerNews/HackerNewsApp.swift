@@ -12,8 +12,29 @@ import Routing
 struct HackerNewsApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .withRouter(\.router)
+            RootView()
         }
     }
+}
+
+private struct RootView: View {
+    @State private var safariItem: SafariItem?
+
+    var body: some View {
+        ContentView()
+            .withRouter(\.router)
+            .environment(\.openURL, OpenURLAction { url in
+                safariItem = SafariItem(url: url)
+                return .handled
+            })
+            .sheet(item: $safariItem) { item in
+                SafariView(url: item.url)
+                    .ignoresSafeArea()
+            }
+    }
+}
+
+private struct SafariItem: Identifiable {
+    let url: URL
+    var id: String { url.absoluteString }
 }
