@@ -170,6 +170,7 @@ private struct CommentView: View {
                     if let content = comment.content {
                         Markdown(content)
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
                     }
                     
                     if !comment.children.isEmpty {
