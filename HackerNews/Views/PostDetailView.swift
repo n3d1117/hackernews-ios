@@ -1,7 +1,7 @@
 import SwiftUI
 import MarkdownUI
 
-private let commentSpacing: CGFloat = 12
+private let commentSpacing: CGFloat = 16
 
 struct PostDetailView: View {
     let story: Story
@@ -87,35 +87,64 @@ struct PostDetailView: View {
 private struct CommentView: View {
     let comment: Comment
     let depth: Int
+    @State private var isCollapsed = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if let author = comment.author {
-                HStack(spacing: 5) {
-                    Image(systemName: "person.crop.circle.fill")
-                        .foregroundStyle(.secondary)
+            if let metaLine {
+                HStack(spacing: 6) {
+                    Image(systemName: "chevron.right")
                         .imageScale(.small)
-                    Text(author)
-                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 10, alignment: .center)
+                        .rotationEffect(.degrees(isCollapsed ? 0 : 90))
+
+                    Text(metaLine)
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
-                .padding(.bottom, 6)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 8)
             }
-            
-            if let content = comment.content, content != "[deleted]" {
-                Markdown(content)
-            }
-            
-            if !comment.children.isEmpty {
-                VStack(alignment: .leading, spacing: commentSpacing) {
-                    ForEach(comment.children) { child in
-                        CommentView(comment: child, depth: depth + 1)
+
+            if !isCollapsed {
+                VStack(alignment: .leading, spacing: 0) {
+                    if let content = comment.content {
+                        Markdown(content)
+                    }
+                    
+                    if !comment.children.isEmpty {
+                        VStack(alignment: .leading, spacing: commentSpacing) {
+                            ForEach(comment.children) { child in
+                                CommentView(comment: child, depth: depth + 1)
+                            }
+                        }
+                        .padding(.top, commentSpacing)
+                        .padding(.leading, 12)
                     }
                 }
-                .padding(.top, commentSpacing)
-                .padding(.leading, 12)
+                .transition(.opacity)
             }
         }
-        .padding(.leading, CGFloat(depth) * 8)
+        .padding(.leading, CGFloat(depth) * 6)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                isCollapsed.toggle()
+            }
+        }
+    }
+
+    private var metaLine: String? {
+        switch (comment.author, comment.timeAgo) {
+        case let (author?, timeAgo?):
+            return "\(author) \u{00b7} \(timeAgo)"
+        case let (author?, nil):
+            return author
+        case let (nil, timeAgo?):
+            return timeAgo
+        default:
+            return nil
+        }
     }
 }

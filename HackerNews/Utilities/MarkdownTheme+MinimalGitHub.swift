@@ -5,7 +5,7 @@ extension Theme {
     /// A minimal theme that mimics the GitHub style.
     static let minimalGitHub = Theme()
         .text {
-            FontSize(13)
+            FontSize(15)
         }
         .code {
             FontFamilyVariant(.monospaced)

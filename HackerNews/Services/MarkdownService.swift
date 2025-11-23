@@ -13,8 +13,11 @@ actor MarkdownService {
         text = wrap(in: text, tag: "i", with: "*")
         text = replaceParagraphs(in: text)
         text = replaceBreaks(in: text)
+        text = neutralizeLinkReferences(in: text)
         text = stripRemainingTags(in: text)
         text = decodeEntities(in: text)
+        text = ensureReferenceSeparation(in: text)
+        text = trimEmptyLines(in: text)
         return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
@@ -66,17 +69,66 @@ actor MarkdownService {
         return updated
     }
 
+    private func neutralizeLinkReferences(in text: String) -> String {
+        replace(text, pattern: #"(?m)^\s*\[(.+?)\]:\s*(.+)$"#) { match in
+            let label = match[1]
+            let target = match[2]
+            return "\(label): \(target)"
+        }
+    }
+
     private func stripRemainingTags(in text: String) -> String {
         replace(text, pattern: #"<[^>]+>"#) { _ in "" }
     }
 
     private func decodeEntities(in text: String) -> String {
-        text
-            .replacingOccurrences(of: "&amp;", with: "&")
-            .replacingOccurrences(of: "&lt;", with: "<")
-            .replacingOccurrences(of: "&gt;", with: ">")
-            .replacingOccurrences(of: "&quot;", with: "\"")
-            .replacingOccurrences(of: "&#39;", with: "'")
+        var decoded = text
+        decoded = decoded.replacingOccurrences(of: "&amp;", with: "&")
+        decoded = decoded.replacingOccurrences(of: "&lt;", with: "<")
+        decoded = decoded.replacingOccurrences(of: "&gt;", with: ">")
+        decoded = decoded.replacingOccurrences(of: "&quot;", with: "\"")
+        decoded = decoded.replacingOccurrences(of: "&apos;", with: "'")
+        decoded = decoded.replacingOccurrences(of: "&#39;", with: "'")
+        decoded = decoded.replacingOccurrences(of: "&#x27;", with: "'")
+        decoded = decoded.replacingOccurrences(of: "&#x2F;", with: "/")
+        decoded = decodeNumericEntities(in: decoded)
+        return decoded
+    }
+
+    private func decodeNumericEntities(in text: String) -> String {
+        var updated = text
+        updated = replace(updated, pattern: #"&#(\d+);"#) { match in
+            guard let code = Int(match[1]), let scalar = UnicodeScalar(code) else { return match[0] }
+            return String(scalar)
+        }
+        updated = replace(updated, pattern: #"&#x([0-9A-Fa-f]+);"#) { match in
+            guard let code = Int(match[1], radix: 16), let scalar = UnicodeScalar(code) else { return match[0] }
+            return String(scalar)
+        }
+        return updated
+    }
+
+    private func ensureReferenceSeparation(in text: String) -> String {
+        var lines: [String] = []
+        for line in text.split(separator: "\n", omittingEmptySubsequences: false) {
+            let isReference = line.range(of: #"^[^:]+:\s"#, options: .regularExpression) != nil
+            if isReference, let last = lines.last, !last.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                lines.append("")
+            }
+            lines.append(String(line))
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    private func trimEmptyLines(in text: String) -> String {
+        var lines = text.split(separator: "\n", omittingEmptySubsequences: false)
+        while let first = lines.first, first.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            lines.removeFirst()
+        }
+        while let last = lines.last, last.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            lines.removeLast()
+        }
+        return lines.joined(separator: "\n")
     }
 
     private func replace(_ text: String, pattern: String, options: NSRegularExpression.Options = [], transform: ([String]) -> String) -> String {

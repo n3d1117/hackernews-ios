@@ -51,10 +51,44 @@ struct Comment: Identifiable, Decodable, Equatable, Hashable {
     let id: Int
     let author: String?
     let content: String?
+    let timeAgo: String?
     let children: [Comment]
+
+    init(id: Int, author: String?, content: String?, timeAgo: String? = nil, children: [Comment]) {
+        self.id = id
+        self.author = author
+        self.content = content
+        self.timeAgo = timeAgo
+        self.children = children
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case author = "user"
+        case content
+        case timeAgo = "time_ago"
+        case children = "comments"
+    }
 }
 
 struct StoryThread: Equatable {
     let story: Story
     let comments: [Comment]
+}
+
+extension Comment {
+    func pruned() -> Comment? {
+        let trimmedContent = content?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedContent = (trimmedContent?.isEmpty ?? true) ? nil : trimmedContent
+        let prunedChildren = children.compactMap { $0.pruned() }
+        let hasContent = normalizedContent != nil
+        guard hasContent || !prunedChildren.isEmpty else { return nil }
+        return Comment(
+            id: id,
+            author: author,
+            content: normalizedContent,
+            timeAgo: timeAgo,
+            children: prunedChildren
+        )
+    }
 }

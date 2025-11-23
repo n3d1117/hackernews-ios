@@ -48,14 +48,16 @@ struct HackerNewsAPI {
         for comment in comments {
             let children = await mapComments(comment.comments)
             let content = await markdown.convert(comment.content)
-            mapped.append(
-                Comment(
-                    id: comment.id,
-                    author: comment.user,
-                    content: content,
-                    children: children
-                )
+            let node = Comment(
+                id: comment.id,
+                author: comment.user,
+                content: content,
+                timeAgo: comment.timeAgo,
+                children: children
             )
+            if let pruned = node.pruned() {
+                mapped.append(pruned)
+            }
         }
         return mapped
     }
@@ -116,6 +118,7 @@ private struct FeedComment: Decodable {
     let level: Int?
     let user: String?
     let time: TimeInterval?
+    let timeAgo: String?
     let content: String?
     let comments: [FeedComment]
 
@@ -124,6 +127,7 @@ private struct FeedComment: Decodable {
         case level
         case user
         case time
+        case timeAgo = "time_ago"
         case content
         case comments
     }
