@@ -12,29 +12,40 @@ struct HackerNewsAPI {
 
     func frontPageStories(limit: Int = 30) async throws -> [Story] {
         let items: [FeedStory] = try await http.get(baseURL.appending(path: "news"), headers: headers)
-        return items.prefix(limit).map {
-            Story(
-                id: $0.id,
-                title: $0.title,
-                url: $0.url.flatMap(URL.init(string:)),
-                domain: $0.domain,
-                author: $0.user,
-                points: $0.points,
-                commentsCount: $0.commentsCount,
-                time: $0.time,
-                type: $0.type
+        var stories: [Story] = []
+        stories.reserveCapacity(min(limit, items.count))
+
+        for item in items.prefix(limit) {
+            let content = await markdown.convert(item.content)
+            stories.append(
+                Story(
+                    id: item.id,
+                    title: item.title,
+                    url: item.url.flatMap(URL.init(string:)),
+                    domain: item.domain,
+                    content: content,
+                    author: item.user,
+                    points: item.points,
+                    commentsCount: item.commentsCount,
+                    time: item.time,
+                    type: item.type
+                )
             )
         }
+
+        return stories
     }
 
     func storyThread(id: Int) async throws -> StoryThread {
         let item: FeedItem = try await http.get(baseURL.appending(path: "item/\(id)"), headers: headers)
         let comments = await mapComments(item.comments)
+        let content = await markdown.convert(item.content)
         let story = Story(
             id: item.id,
             title: item.title,
             url: item.url.flatMap(URL.init(string:)),
             domain: item.domain,
+            content: content,
             author: item.user,
             points: item.points,
             commentsCount: item.commentsCount,
@@ -76,6 +87,7 @@ private struct FeedStory: Decodable {
     let imageURL: String?
     let url: String?
     let domain: String?
+    let content: String?
 
     private enum CodingKeys: String, CodingKey {
         case id
@@ -88,6 +100,7 @@ private struct FeedStory: Decodable {
         case imageURL = "image_url"
         case url
         case domain
+        case content
     }
 }
 
@@ -101,6 +114,7 @@ private struct FeedItem: Decodable {
     let url: String?
     let domain: String?
     let commentsCount: Int?
+    let content: String?
     let comments: [FeedComment]
 
     private enum CodingKeys: String, CodingKey {
@@ -113,6 +127,7 @@ private struct FeedItem: Decodable {
         case url
         case domain
         case commentsCount = "comments_count"
+        case content
         case comments
     }
 }

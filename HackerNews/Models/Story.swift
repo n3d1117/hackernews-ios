@@ -6,6 +6,7 @@ struct Story: Identifiable, Decodable, Equatable, Hashable {
     let title: String
     let url: URL?
     let domain: String?
+    let content: String?
     let author: String?
     let points: Int?
     let commentsCount: Int?
@@ -17,6 +18,7 @@ struct Story: Identifiable, Decodable, Equatable, Hashable {
         case title
         case url
         case domain
+        case content
         case author = "user"
         case points
         case commentsCount = "comments_count"
@@ -24,11 +26,12 @@ struct Story: Identifiable, Decodable, Equatable, Hashable {
         case type
     }
 
-    init(id: Int, title: String, url: URL?, domain: String? = nil, author: String?, points: Int?, commentsCount: Int?, time: TimeInterval?, type: String?) {
+    init(id: Int, title: String, url: URL?, domain: String? = nil, content: String? = nil, author: String?, points: Int?, commentsCount: Int?, time: TimeInterval?, type: String?) {
         self.id = id
         self.title = title
         self.url = url
         self.domain = domain
+        self.content = content
         self.author = author
         self.points = points
         self.commentsCount = commentsCount
@@ -43,6 +46,7 @@ struct Story: Identifiable, Decodable, Equatable, Hashable {
         let urlString = try container.decodeIfPresent(String.self, forKey: .url)
         url = urlString.flatMap(URL.init(string:))
         domain = try container.decodeIfPresent(String.self, forKey: .domain)
+        content = try container.decodeIfPresent(String.self, forKey: .content)
         author = try container.decodeIfPresent(String.self, forKey: .author)
         points = try container.decodeIfPresent(Int.self, forKey: .points)
         commentsCount = try container.decodeIfPresent(Int.self, forKey: .commentsCount)

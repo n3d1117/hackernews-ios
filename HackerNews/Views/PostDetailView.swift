@@ -7,6 +7,7 @@ struct PostDetailView: View {
     let story: Story
     private let api = HackerNewsAPI()
 
+    @State private var storyContent: String?
     @State private var comments: [Comment] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
@@ -76,6 +77,12 @@ struct PostDetailView: View {
                 .font(.title3.weight(.semibold))
                 .multilineTextAlignment(.leading)
 
+            if let content {
+                Markdown(content)
+                    .textSelection(.enabled)
+                    .markdownTheme(.minimalGitHub)
+            }
+
             if let authorTimeText {
                 authorTimeText
                     .font(.subheadline)
@@ -125,6 +132,12 @@ struct PostDetailView: View {
         return "\(value) \(value == 1 ? singular : pluralized)"
     }
 
+    private var content: String? {
+        guard let text = story.content ?? storyContent else { return nil }
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
     @MainActor
     private func loadComments() async {
         guard !isLoading else { return }
@@ -133,6 +146,7 @@ struct PostDetailView: View {
 
         do {
             let thread = try await api.storyThread(id: story.id)
+            storyContent = thread.story.content
             comments = thread.comments
             errorMessage = nil
         } catch {
