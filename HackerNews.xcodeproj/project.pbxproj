@@ -26,9 +26,22 @@
 		8154945C2ED2828500CC67A8 /* HackerNewsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HackerNewsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		81BA8F562ED910140009CF36 /* Exceptions for "HackerNews" folder in "HackerNews" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 8133B8B92EA2EB0200B06D01 /* HackerNews */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		8133B8BC2EA2EB0200B06D01 /* HackerNews */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				81BA8F562ED910140009CF36 /* Exceptions for "HackerNews" folder in "HackerNews" target */,
+			);
 			path = HackerNews;
 			sourceTree = "<group>";
 		};
@@ -344,6 +357,16 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleURLTypes = (
+					{
+						CFBundleTypeRole = Viewer;
+						CFBundleURLName = hn;
+						CFBundleURLSchemes = (
+							hn,
+						);
+					},
+				);
+				INFOPLIST_FILE = HackerNews/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -388,6 +411,16 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleURLTypes = (
+					{
+						CFBundleTypeRole = Viewer;
+						CFBundleURLName = hn;
+						CFBundleURLSchemes = (
+							hn,
+						);
+					},
+				);
+				INFOPLIST_FILE = HackerNews/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

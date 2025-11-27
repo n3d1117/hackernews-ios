@@ -2,20 +2,20 @@ import SwiftUI
 import Routing
 
 enum AppRoute: Routable {
-    case post(Story)
+    case post(Story, commentID: Int? = nil)
 
     var id: String {
         switch self {
-        case let .post(story):
-            return "post-\(story.id)"
+        case let .post(story, commentID):
+            return "post-\(story.id)-\(commentID ?? 0)"
         }
     }
 
     @ViewBuilder
     var destination: some View {
         switch self {
-        case let .post(story):
-            PostDetailView(story: story)
+        case let .post(story, commentID):
+            PostDetailView(story: story, commentID: commentID)
         }
     }
 }

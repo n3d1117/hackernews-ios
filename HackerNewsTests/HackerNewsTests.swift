@@ -5,6 +5,7 @@
 //  Created by ned on 23/11/25.
 //
 
+import Foundation
 import Testing
 @testable import HackerNews
 
@@ -74,6 +75,45 @@ struct MarkdownServiceTests {
         let deleted = Comment(id: 1, author: "ghost", content: "[deleted]", children: [])
         let pruned = deleted.pruned()
         #expect(pruned?.content == "[deleted]")
+    }
+
+    @Test func extractsStoryIDFromItemLink() {
+        let url = URL(string: "https://news.ycombinator.com/item?id=45979220")!
+        #expect(HackerNewsLinkParser.storyID(from: url) == 45979220)
+    }
+
+    @Test func extractsStoryIDFromRelativeItemLink() {
+        let url = URL(string: "item?id=45979220")!
+        #expect(HackerNewsLinkParser.storyID(from: url) == 45979220)
+    }
+
+    @Test func extractsStoryIDFromRootedRelativeLink() {
+        let url = URL(string: "/item?id=45979220")!
+        #expect(HackerNewsLinkParser.storyID(from: url) == 45979220)
+    }
+
+    @Test func extractsStoryIDFromPathItemLink() {
+        let url = URL(string: "https://news.ycombinator.com/item/45979220")!
+        #expect(HackerNewsLinkParser.storyID(from: url) == 45979220)
+    }
+
+    @Test func extractsStoryAndCommentFromAnchorLink() {
+        let url = URL(string: "https://news.ycombinator.com/item?id=23160367#23160530")!
+        let link = HackerNewsLinkParser.storyLink(from: url)
+        #expect(link?.storyID == 23160367)
+        #expect(link?.commentID == 23160530)
+    }
+
+    @Test func extractsStoryAndCommentFromHNScheme() {
+        let url = URL(string: "hn://46073844#46073077")!
+        let link = HackerNewsLinkParser.storyLink(from: url)
+        #expect(link?.storyID == 46073844)
+        #expect(link?.commentID == 46073077)
+    }
+
+    @Test func ignoresNonHackerNewsLinks() {
+        let url = URL(string: "https://example.com/item?id=123")!
+        #expect(HackerNewsLinkParser.storyID(from: url) == nil)
     }
 
     @Test func separatesReferenceLinksWithBlankLine() async throws {

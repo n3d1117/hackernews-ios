@@ -40,7 +40,7 @@ extension Theme {
                     .markdownTextStyle {
                         FontFamilyVariant(.monospaced)
                     }
-                    .padding([.top, .trailing], 16)
+                    .padding(16)
             }
             .background(Color.secondaryBackground)
             .clipShape(RoundedRectangle(cornerRadius: 6))
