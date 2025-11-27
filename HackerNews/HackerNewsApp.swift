@@ -11,7 +11,7 @@ import Routing
 
 @main
 struct HackerNewsApp: App {
-    @State private var coordinator = DeepLinkCoordinator()
+    @State private var coordinator = DeepLinkCoordinator.shared
 
     var body: some Scene {
         WindowGroup {
@@ -25,48 +25,34 @@ struct HackerNewsApp: App {
 private struct RootView: View {
     @Environment(\.router) private var router
     @Bindable var coordinator: DeepLinkCoordinator
-    private let api = HackerNewsAPI()
 
     var body: some View {
         ContentView()
             .sheet(item: $coordinator.safariItem) { item in
                 SafariView(url: item.url)
-                    .ignoresSafeArea()
+            }
+            .onAppear {
+                coordinator.router = router
             }
             .onOpenURL { url in
                 _ = coordinator.open(url)
             }
-            .task(id: coordinator.pendingLink?.id) {
-                guard let payload = coordinator.pendingLink else { return }
-                await openStory(payload)
-            }
-    }
-
-    private func openStory(_ payload: DeepLinkPayload) async {
-        do {
-            let thread = try await api.storyThread(id: payload.storyID)
-            await MainActor.run {
-                router.navigate(to: .post(thread.story, commentID: payload.commentID))
-            }
-        } catch {
-            await MainActor.run {
-                coordinator.safariItem = SafariItem(url: payload.canonicalURL)
-            }
-        }
-        coordinator.pendingLink = nil
     }
 }
 
-private struct SafariItem: Identifiable {
+struct SafariItem: Identifiable {
     let url: URL
     var id: String { url.absoluteString }
 }
 
 @MainActor
 @Observable
-private final class DeepLinkCoordinator {
+final class DeepLinkCoordinator {
+    static let shared = DeepLinkCoordinator()
+
+    var router: Router<AppRoute>?
     var safariItem: SafariItem?
-    var pendingLink: DeepLinkPayload?
+    private let api = HackerNewsAPI()
 
     var openURLAction: OpenURLAction {
         OpenURLAction(handler: open)
@@ -74,20 +60,28 @@ private final class DeepLinkCoordinator {
 
     func open(_ url: URL) -> OpenURLAction.Result {
         safariItem = nil
-        pendingLink = DeepLinkPayload(url: url)
-        if pendingLink == nil { safariItem = SafariItem(url: url) }
+        guard let payload = DeepLinkPayload(url: url) else {
+            safariItem = SafariItem(url: url)
+            return .handled
+        }
+        Task { await handle(payload) }
         return .handled
+    }
+
+    private func handle(_ payload: DeepLinkPayload) async {
+        do {
+            let thread = try await api.storyThread(id: payload.storyID)
+            router?.navigate(to: .post(thread.story, commentID: payload.commentID))
+        } catch {
+            safariItem = SafariItem(url: payload.canonicalURL)
+        }
     }
 }
 
-private struct DeepLinkPayload: Equatable, Sendable {
+struct DeepLinkPayload: Equatable, Sendable {
     let storyID: Int
     let commentID: Int?
     let canonicalURL: URL
-
-    var id: String {
-        "story-\(storyID)-\(commentID ?? 0)"
-    }
 
     init?(url: URL) {
         guard let link = HackerNewsLinkParser.storyLink(from: url) else { return nil }

@@ -74,19 +74,8 @@ private struct StoryRow: View {
     let story: Story
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(story.title)
-                .font(.headline)
-            if let url = story.url {
-                Link(destination: url) {
-                    Text(url.host ?? url.absoluteString)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-            }
-        }
-        .padding(.vertical, 8)
+        StoryHeaderView(story: story, showContent: false)
+            .padding(.vertical, 5)
     }
 }
 

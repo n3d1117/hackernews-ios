@@ -16,6 +16,10 @@ enum AppRoute: Routable {
         switch self {
         case let .post(story, commentID):
             PostDetailView(story: story, commentID: commentID)
+                .environment(\.openURL, DeepLinkCoordinator.shared.openURLAction)
+                .onOpenURL { url in
+                    _ = DeepLinkCoordinator.shared.open(url)
+                }
         }
     }
 }

@@ -54,96 +54,21 @@ struct PostDetailView: View {
             .taskOnce {
                 await loadComments()
             }
-            .onChange(of: comments) { _ in
+            .onChange(of: comments) {
                 scrollToAnchorIfNeeded(proxy)
             }
         }
     }
 
-    private var header: some View {
-        Group {
-            if let url = story.url {
-                Link(destination: url) {
-                    headerContent
-                }
-                .buttonStyle(.plain)
-            } else {
-                headerContent
+    @ViewBuilder private var header: some View {
+        if let url = story.url {
+            Link(destination: url) {
+                StoryHeaderView(story: story, content: story.content ?? storyContent)
             }
+            .buttonStyle(.plain)
+        } else {
+            StoryHeaderView(story: story, content: story.content ?? storyContent)
         }
-    }
-
-    private var headerContent: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if let domainText {
-                Text(domainText.uppercased())
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-            }
-
-            Text(story.title)
-                .font(.title3.weight(.semibold))
-                .multilineTextAlignment(.leading)
-
-            if let content {
-                Markdown(content)
-                    .textSelection(.enabled)
-                    .markdownTheme(.minimalGitHub)
-            }
-
-            if let authorTimeText {
-                authorTimeText
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            if let statsText {
-                statsText
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    private var domainText: String? {
-        story.domain ?? story.url?.host ?? "news.ycombinator.com"
-    }
-
-    private var authorTimeText: Text? {
-        dotSeparated([
-            story.author.map(Text.init),
-            storyDate.map { Text($0, format: .relative(presentation: .numeric, unitsStyle: .narrow)) }
-        ].compactMap { $0 })
-    }
-
-    private var statsText: Text? {
-        dotSeparated([
-            story.points.map { Text(quantified($0, singular: "point")) },
-            story.commentsCount.map { Text(quantified($0, singular: "comment")) }
-        ].compactMap { $0 })
-    }
-
-    private var storyDate: Date? {
-        story.time.map { Date(timeIntervalSince1970: $0) }
-    }
-
-    private func dotSeparated(_ parts: [Text]) -> Text? {
-        guard var text = parts.first else { return nil }
-        for part in parts.dropFirst() {
-            text = text + Text(" \u{00b7} ") + part
-        }
-        return text
-    }
-
-    private func quantified(_ value: Int, singular: String, plural: String? = nil) -> String {
-        let pluralized = plural ?? singular + "s"
-        return "\(value) \(value == 1 ? singular : pluralized)"
-    }
-
-    private var content: String? {
-        guard let text = story.content ?? storyContent else { return nil }
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? nil : trimmed
     }
 
     @MainActor
