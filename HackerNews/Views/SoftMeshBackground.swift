@@ -2,8 +2,10 @@ import SwiftUI
 
 struct SoftMeshBackground: View {
     let seed: Int
+    var baseHue: Double?
     var overlayTopOpacity: Double = 0.95
     var overlayBottomOpacity: Double = 0.88
+    var intensity: Double = 0.3
 
     @State private var phase = Double.random(in: 0...500)
 
@@ -24,7 +26,7 @@ struct SoftMeshBackground: View {
             )
             .blur(radius: 84)
             .scaleEffect(1.14)
-            .opacity(0.3)
+            .opacity(intensity)
         }
     }
 
@@ -37,17 +39,17 @@ struct SoftMeshBackground: View {
     }
 
     private var palette: [Color] {
-        let baseHue = Double(abs(seed % 360)) / 360.0
+        let hueSeed = baseHue ?? Double(abs(seed % 360)) / 360.0
         let hues: [Double] = [
-            baseHue,
-            baseHue + 0.04,
-            baseHue - 0.05,
-            baseHue + 0.09,
-            baseHue - 0.1,
-            baseHue + 0.14,
-            baseHue - 0.16,
-            baseHue + 0.18,
-            baseHue - 0.2
+            hueSeed,
+            hueSeed + 0.04,
+            hueSeed - 0.05,
+            hueSeed + 0.09,
+            hueSeed - 0.1,
+            hueSeed + 0.14,
+            hueSeed - 0.16,
+            hueSeed + 0.18,
+            hueSeed - 0.2
         ].map { $0.truncatingRemainder(dividingBy: 1.0) }
 
         return hues.enumerated().map { index, hue in
