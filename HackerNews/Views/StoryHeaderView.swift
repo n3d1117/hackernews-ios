@@ -15,7 +15,7 @@ struct StoryHeaderView: View {
             }
 
             Text(story.title)
-                .font(.headline.weight(.semibold))
+                .font(.title3.weight(.semibold))
                 .multilineTextAlignment(.leading)
 
             if showContent, let content = trimmedContent {
@@ -36,6 +36,7 @@ struct StoryHeaderView: View {
                     .foregroundStyle(.secondary)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var domainText: String? {

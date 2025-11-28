@@ -16,6 +16,8 @@ struct ContentView: View {
     @State private var stories: [Story] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
+    
+    @Namespace private var namespace
 
     var body: some View {
         Group {
@@ -39,13 +41,15 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List(stories) { story in
-                    Button {
-                        router.navigate(to: .post(story))
+                    NavigationLink {
+                        AppRoute.post(story)
+                            .destination
+                            .navigationTransition(.zoom(sourceID: story.id, in: namespace))
                     } label: {
                         StoryRow(story: story)
+                            .matchedTransitionSource(id: story.id, in: namespace)
                     }
                 }
-                .listStyle(.plain)
             }
         }
         .navigationTitle("Hacker News")

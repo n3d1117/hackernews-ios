@@ -38,6 +38,12 @@ struct PostDetailView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .center)
                     } else {
+                        Divider()
+                        
+                        Text("Comments")
+                            .font(.title2.weight(.semibold))
+                            .padding(.bottom, 4)
+                        
                         VStack(alignment: .leading, spacing: commentSpacing) {
                             ForEach(comments) { comment in
                                 CommentView(comment: comment, depth: 0, highlightID: commentID)
