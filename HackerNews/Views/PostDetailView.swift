@@ -16,52 +16,56 @@ struct PostDetailView: View {
     @State private var didScrollToAnchor = false
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    header
+        ZStack {
+            SoftMeshBackground(seed: story.id)
 
-                    if isLoading {
-                        ProgressView("Loading comments...")
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        header
+
+                        if isLoading {
+                            ProgressView("Loading comments...")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        } else if let errorMessage {
+                            VStack(spacing: 8) {
+                                Text("Could not load comments")
+                                    .font(.headline)
+                                Text(errorMessage)
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                                Button("Retry") {
+                                    Task { await loadComments() }
+                                }
+                            }
                             .frame(maxWidth: .infinity, alignment: .center)
-                    } else if let errorMessage {
-                        VStack(spacing: 8) {
-                            Text("Could not load comments")
-                                .font(.headline)
-                            Text(errorMessage)
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                            Button("Retry") {
-                                Task { await loadComments() }
+                        } else {
+                            Divider()
+                            
+                            Text("Comments")
+                                .font(.title2.weight(.semibold))
+                                .padding(.bottom, 4)
+                            
+                            VStack(alignment: .leading, spacing: commentSpacing) {
+                                ForEach(comments) { comment in
+                                    CommentView(comment: comment, depth: 0, highlightID: commentID)
+                                }
                             }
+                            .markdownTheme(.minimalGitHub)
                         }
-                        .frame(maxWidth: .infinity, alignment: .center)
-                    } else {
-                        Divider()
-                        
-                        Text("Comments")
-                            .font(.title2.weight(.semibold))
-                            .padding(.bottom, 4)
-                        
-                        VStack(alignment: .leading, spacing: commentSpacing) {
-                            ForEach(comments) { comment in
-                                CommentView(comment: comment, depth: 0, highlightID: commentID)
-                            }
-                        }
-                        .markdownTheme(.minimalGitHub)
                     }
+                    .padding(.horizontal)
+                    .padding(.top, 16)
                 }
-                .padding(.horizontal)
-                .padding(.top, 16)
-            }
-            .navigationTitle("Post")
-            .navigationBarTitleDisplayMode(.inline)
-            .taskOnce {
-                await loadComments()
-            }
-            .onChange(of: comments) {
-                scrollToAnchorIfNeeded(proxy)
+                .navigationTitle("Post")
+                .navigationBarTitleDisplayMode(.inline)
+                .taskOnce {
+                    await loadComments()
+                }
+                .onChange(of: comments) {
+                    scrollToAnchorIfNeeded(proxy)
+                }
             }
         }
     }
