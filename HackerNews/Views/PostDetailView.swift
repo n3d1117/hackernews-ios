@@ -1,7 +1,7 @@
 import SwiftUI
 import MarkdownUI
 
-private let commentSpacing: CGFloat = 16
+private let commentSpacing: CGFloat = 18
 private let highlightOpacity: CGFloat = 0.14
 
 struct PostDetailView: View {
@@ -17,7 +17,12 @@ struct PostDetailView: View {
 
     var body: some View {
         ZStack {
-            SoftMeshBackground(seed: story.id)
+            SoftMeshBackground(
+                seed: story.id,
+                overlayTopOpacity: 0.98,
+                overlayBottomOpacity: 0.96,
+                intensity: 0.18
+            )
 
             ScrollViewReader { proxy in
                 ScrollView {
@@ -41,14 +46,21 @@ struct PostDetailView: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
                         } else {
-                            Divider()
+                            WaveSeparator()
+                                .frame(height: 16)
+                                .padding(.top, 4)
                             
                             Text("Comments")
                                 .font(.title2.weight(.semibold))
+                                .foregroundStyle(.primary.opacity(0.94))
                                 .padding(.bottom, 4)
                             
                             VStack(alignment: .leading, spacing: commentSpacing) {
-                                ForEach(comments) { comment in
+                                ForEach(Array(comments.enumerated()), id: \.element.id) { index, comment in
+                                    if index > 0 {
+                                        Divider()
+                                            .padding(.vertical, 2)
+                                    }
                                     CommentView(comment: comment, depth: 0, highlightID: commentID)
                                 }
                             }
@@ -73,12 +85,20 @@ struct PostDetailView: View {
     @ViewBuilder private var header: some View {
         if let url = story.url {
             Link(destination: url) {
-                StoryHeaderView(story: story, content: story.content ?? storyContent)
+                headerCard
             }
             .buttonStyle(.plain)
         } else {
-            StoryHeaderView(story: story, content: story.content ?? storyContent)
+            headerCard
         }
+    }
+
+    private var headerCard: some View {
+        StoryHeaderView(story: story, content: story.content ?? storyContent)
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(cardBackground)
+            .overlay(cardStroke)
     }
 
     @MainActor
@@ -118,6 +138,75 @@ struct PostDetailView: View {
         }
         return false
     }
+
+    private var meshHue: Double {
+        Double(abs(story.id % 360)) / 360.0
+    }
+
+    private var meshTint: Color {
+        Color(hue: meshHue, saturation: 0.2, brightness: 0.94)
+    }
+
+    private var cardBackground: some View {
+        RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color(.systemBackground).opacity(0.4),
+                        meshTint.opacity(0.14)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(.ultraThinMaterial.opacity(0.55))
+            )
+    }
+
+    private var cardStroke: some View {
+        RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+    }
+}
+
+private struct WaveSeparator: View {
+    var amplitude: CGFloat = 3.5
+    var wavelength: CGFloat = 68
+
+    var body: some View {
+        Canvas { context, size in
+            guard size.width > 0 else { return }
+            let midY = size.height / 2
+            var path = Path()
+            path.move(to: .init(x: 0, y: midY))
+
+            stride(from: 0, through: size.width, by: 1).forEach { x in
+                let sine = sin((x / wavelength) * .pi * 2)
+                let y = midY + (sine * amplitude)
+                path.addLine(to: .init(x: x, y: y))
+            }
+
+            let gradient = Gradient(stops: [
+                .init(color: .secondary.opacity(0), location: -0.08),
+                .init(color: .secondary.opacity(0.32), location: 0.1),
+                .init(color: .secondary.opacity(0.45), location: 0.5),
+                .init(color: .secondary.opacity(0.32), location: 0.9),
+                .init(color: .secondary.opacity(0), location: 1.08)
+            ])
+
+            context.stroke(
+                path,
+                with: .linearGradient(
+                    gradient,
+                    startPoint: .init(x: 0, y: midY),
+                    endPoint: .init(x: size.width, y: midY)
+                ),
+                style: StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round)
+            )
+        }
+    }
 }
 
 private struct CommentView: View {
@@ -141,7 +230,7 @@ private struct CommentView: View {
             }
         }
         .id(comment.id)
-        .padding(.leading, depth == 0 ? 0 : 12)
+        .padding(.leading, depth == 0 ? 0 : 14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
         .onTapGesture {
@@ -193,14 +282,17 @@ private struct CommentView: View {
                         .rotationEffect(.degrees(isCollapsed ? 0 : 90))
 
                     metaText
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.secondary.opacity(0.9))
                 }
             }
 
             if !isCollapsed, let content = comment.content {
                 Markdown(content)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .markdownTextStyle {
+                        ForegroundColor(.primary.opacity(0.85))
+                    }
                     .textSelection(.enabled)
             }
         }

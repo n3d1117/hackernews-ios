@@ -26,14 +26,14 @@ struct StoryHeaderView: View {
 
             if let authorTimeText {
                 authorTimeText
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary.opacity(0.92))
             }
 
             if let statsText {
                 statsText
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.footnote)
+                    .foregroundStyle(.tertiary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

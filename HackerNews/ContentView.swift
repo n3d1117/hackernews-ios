@@ -37,7 +37,6 @@ struct ContentView: View {
                 await refresh()
             }
         }
-        .tint(.orange)
         .navigationTitle("Hacker News")
         .navigationBarTitleDisplayMode(.inline)
         .taskOnce {
@@ -56,32 +55,28 @@ struct ContentView: View {
         }
     }
 
+    @ViewBuilder
     private var content: some View {
-        Group {
-            if isLoading && stories.isEmpty {
-                VStack(spacing: 12) {
-                    ProgressView("Loading stories...")
-                        .frame(maxWidth: .infinity)
+        if isLoading && stories.isEmpty {
+            ProgressView("Loading stories...")
+                .frame(maxWidth: .infinity)
+        } else if let errorMessage, stories.isEmpty {
+            VStack(spacing: 12) {
+                Text("Could not load stories")
+                    .font(.headline)
+                Text(errorMessage)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                Button("Retry") {
+                    Task { await loadStories() }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            } else if let errorMessage, stories.isEmpty {
-                VStack(spacing: 12) {
-                    Text("Could not load stories")
-                        .font(.headline)
-                    Text(errorMessage)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                    Button("Retry") {
-                        Task { await loadStories() }
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            } else {
-                LazyVStack(spacing: 14) {
-                    ForEach(stories) { story in
-                        StoryCard(story: story, namespace: namespace)
-                    }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        } else {
+            VStack(spacing: 14) {
+                ForEach(stories) { story in
+                    StoryCard(story: story, namespace: namespace)
                 }
             }
         }
