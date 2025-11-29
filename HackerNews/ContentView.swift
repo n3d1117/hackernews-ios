@@ -34,7 +34,7 @@ struct ContentView: View {
                     .padding(.vertical, 12)
             }
             .refreshable {
-                await refresh()
+                await refreshStories()
             }
             if isLoading && stories.isEmpty {
                 ProgressView("Loading stories...")
@@ -114,16 +114,36 @@ struct ContentView: View {
         defer { isLoading = false }
 
         do {
-            stories = try await api.frontPageStories()
+            stories = try await fetchStories()
         } catch {
             stories = []
             errorMessage = error.localizedDescription
         }
     }
 
-    @MainActor
-    private func refresh() async {
-        await loadStories()
+    private func refreshStories() async {
+        if await MainActor.run(body: { isLoading }) {
+            return
+        }
+
+        do {
+            let latest = try await fetchStories()
+            try await Task.sleep(for: .milliseconds(300))
+            await MainActor.run {
+                errorMessage = nil
+                stories = latest
+            }
+        } catch is CancellationError {
+            return
+        } catch {
+            await MainActor.run {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func fetchStories() async throws -> [Story] {
+        try await api.frontPageStories()
     }
 
     private func pasteLink() {
@@ -137,7 +157,7 @@ struct ContentView: View {
             return
         }
 
-        _ = openURL(url)
+        openURL(url)
     }
 
     private func normalizedURL(from string: String) -> URL? {
