@@ -42,6 +42,14 @@ struct ContentView: View {
         .navigationTitle("Hacker News")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                CategorySelector(selection: Binding(
+                    get: { feed.category },
+                    set: { category in
+                        Task { await feed.selectCategory(category) }
+                    }
+                ))
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     NavigationLink(value: AppRoute.bookmarks) {
@@ -69,17 +77,6 @@ struct ContentView: View {
         }
         .taskOnce {
             await feed.loadInitial()
-        }
-    }
-
-    private var topBar: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Top stories")
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
         }
     }
 
@@ -176,7 +173,7 @@ struct ContentView: View {
         openURL(url)
     }
 
-    private func normalizedURL(from string: String) -> URL? {
+private func normalizedURL(from string: String) -> URL? {
         if let id = Int(string) {
             return URL(string: "hn://\(id)")
         }
@@ -192,6 +189,24 @@ struct ContentView: View {
         }
         
         return nil
+    }
+}
+
+private struct CategorySelector: View {
+    let selection: Binding<StoryFeedCategory>
+
+    var body: some View {
+        Menu {
+            Picker("Feed", selection: selection) {
+                ForEach(StoryFeedCategory.allCases) { category in
+                    Label(category.title, systemImage: category.icon)
+                        .tag(category)
+                }
+            }
+        } label: {
+            Image(systemName: "line.3.horizontal.decrease")
+                .font(.headline.weight(.semibold))
+        }
     }
 }
 

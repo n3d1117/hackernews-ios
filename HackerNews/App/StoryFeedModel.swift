@@ -8,6 +8,7 @@ final class StoryFeedModel {
     private let prefetchThreshold: Int
     private var loadTask: Task<Void, Never>?
 
+    var category: StoryFeedCategory = .top
     var stories: [Story] = []
     var loadedIDs: Set<Int> = []
     var isLoading = false
@@ -22,6 +23,12 @@ final class StoryFeedModel {
 
     func loadInitial() async {
         guard stories.isEmpty else { return }
+        await refresh()
+    }
+
+    func selectCategory(_ category: StoryFeedCategory) async {
+        guard self.category != category else { return }
+        self.category = category
         await refresh()
     }
 
@@ -56,7 +63,7 @@ final class StoryFeedModel {
             }
 
             do {
-                let fetched = try await self.api.frontPageStories(page: page)
+                let fetched = try await self.api.frontPageStories(category: self.category, page: page)
                 self.handleFetched(fetched, page: page)
             } catch is CancellationError {
                 return

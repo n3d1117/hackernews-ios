@@ -45,6 +45,24 @@ struct StoryFeedModelTests {
         #expect(feed.stories.map(\.id) == [1, 2, 3, 4, 5])
     }
 
+    @Test func switchesCategoryAndReloads() async {
+        let stub = StubFrontPageService(pagesByCategory: [
+            .top: [[story(id: 1)], [story(id: 2)]],
+            .new: [[story(id: 10)], [story(id: 11)]]
+        ])
+        let feed = StoryFeedModel(api: stub, prefetchThreshold: 1)
+
+        await feed.loadInitial()
+        #expect(feed.stories.map(\.id) == [1])
+
+        await feed.selectCategory(.new)
+        #expect(feed.category == .new)
+        #expect(feed.stories.map(\.id) == [10])
+
+        await feed.loadMoreIfNeeded(for: feed.stories.last!)
+        #expect(feed.stories.map(\.id) == [10, 11])
+    }
+
     private func story(id: Int) -> Story {
         Story(
             id: id,
@@ -62,13 +80,18 @@ struct StoryFeedModelTests {
 }
 
 private actor StubFrontPageService: FrontPageService {
-    private let pages: [[Story]]
+    private let pagesByCategory: [StoryFeedCategory: [[Story]]]
 
     init(pages: [[Story]]) {
-        self.pages = pages
+        pagesByCategory = [.top: pages]
     }
 
-    func frontPageStories(limit: Int, page: Int) async throws -> [Story] {
+    init(pagesByCategory: [StoryFeedCategory: [[Story]]]) {
+        self.pagesByCategory = pagesByCategory
+    }
+
+    func frontPageStories(category: StoryFeedCategory, limit: Int, page: Int) async throws -> [Story] {
+        let pages = pagesByCategory[category] ?? []
         guard pages.indices.contains(page - 1) else { return [] }
         return pages[page - 1]
     }

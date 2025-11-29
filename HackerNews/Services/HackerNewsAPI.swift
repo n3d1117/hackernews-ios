@@ -1,12 +1,16 @@
 import Foundation
 
 protocol FrontPageService {
-    func frontPageStories(limit: Int, page: Int) async throws -> [Story]
+    func frontPageStories(category: StoryFeedCategory, limit: Int, page: Int) async throws -> [Story]
 }
 
 extension FrontPageService {
+    func frontPageStories(category: StoryFeedCategory, page: Int) async throws -> [Story] {
+        try await frontPageStories(category: category, limit: 30, page: page)
+    }
+
     func frontPageStories(page: Int) async throws -> [Story] {
-        try await frontPageStories(limit: 30, page: page)
+        try await frontPageStories(category: .top, page: page)
     }
 }
 
@@ -20,10 +24,10 @@ struct HackerNewsAPI: FrontPageService {
         self.http = http
     }
 
-    func frontPageStories(limit: Int = 30, page: Int = 1) async throws -> [Story] {
-        var components = URLComponents(url: baseURL.appending(path: "news"), resolvingAgainstBaseURL: false)
+    func frontPageStories(category: StoryFeedCategory = .top, limit: Int = 30, page: Int = 1) async throws -> [Story] {
+        var components = URLComponents(url: baseURL.appending(path: category.path), resolvingAgainstBaseURL: false)
         components?.queryItems = [URLQueryItem(name: "page", value: "\(page)")]
-        let url = components?.url ?? baseURL.appending(path: "news")
+        let url = components?.url ?? baseURL.appending(path: category.path)
         let items: [FeedStory] = try await http.get(url, headers: headers)
         var stories: [Story] = []
         stories.reserveCapacity(min(limit, items.count))
