@@ -28,6 +28,7 @@ struct HackerNewsApp: App {
                     }
                 }
                 .animation(.easeInOut(duration: 0.2), value: coordinator.isLoading)
+                .allowsHitTesting(!coordinator.isLoading)
         }
     }
 

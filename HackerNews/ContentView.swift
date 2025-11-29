@@ -6,15 +6,18 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct ContentView: View {
     @Environment(\.cardNamespace) private var cardNamespace
+    @Environment(\.openURL) private var openURL
 
     private let api = HackerNewsAPI()
     
     @State private var stories: [Story] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var pasteError: String?
 
     var body: some View {
         ZStack {
@@ -40,6 +43,29 @@ struct ContentView: View {
         }
         .navigationTitle("Hacker News")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button {
+                        pasteLink()
+                    } label: {
+                        Label("Paste link", systemImage: "doc.on.clipboard")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                }
+            }
+        }
+        .alert("Cannot open link", isPresented: Binding(
+            get: { pasteError != nil },
+            set: { if !$0 { pasteError = nil } }
+        )) {
+            Button("OK", role: .cancel) { pasteError = nil }
+        } message: {
+            if let pasteError {
+                Text(pasteError)
+            }
+        }
         .taskOnce {
             await loadStories()
         }
@@ -98,6 +124,38 @@ struct ContentView: View {
     @MainActor
     private func refresh() async {
         await loadStories()
+    }
+
+    private func pasteLink() {
+        guard let clipboard = UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines), !clipboard.isEmpty else {
+            pasteError = "Clipboard is empty."
+            return
+        }
+
+        guard let url = normalizedURL(from: clipboard) else {
+            pasteError = "Paste a valid Hacker News link."
+            return
+        }
+
+        _ = openURL(url)
+    }
+
+    private func normalizedURL(from string: String) -> URL? {
+        if let id = Int(string) {
+            return URL(string: "hn://\(id)")
+        }
+
+        if let url = URL(string: string), HackerNewsLinkParser.storyLink(from: url) != nil {
+            return url
+        }
+
+        if !string.contains("://"),
+           let url = URL(string: "https://\(string)"),
+           HackerNewsLinkParser.storyLink(from: url) != nil {
+            return url
+        }
+
+        return nil
     }
 }
 
