@@ -20,6 +20,7 @@ struct HackerNewsApp: App {
                 .withRouter(\.router)
                 .environment(\.openURL, coordinator.openURLAction)
                 .environment(\.cardNamespace, cardNamespace)
+                .environment(\.bookmarksStore, BookmarksStore.shared)
                 .overlay(alignment: .center) {
                     if coordinator.isLoading {
                         loadingOverlay

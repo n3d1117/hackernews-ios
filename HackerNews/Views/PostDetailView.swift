@@ -1,12 +1,12 @@
 import SwiftUI
 import MarkdownUI
-import UIKit
 
 private let commentSpacing: CGFloat = 18
 private let highlightOpacity: CGFloat = 0.14
 private let scrollTopAnchorID = "postDetailTopAnchor"
 
 struct PostDetailView: View {
+    @Environment(\.bookmarksStore) private var bookmarks
     let story: Story
     let commentID: Int?
     private let api = HackerNewsAPI()
@@ -83,6 +83,17 @@ struct PostDetailView: View {
                 }
                 .navigationTitle("Post")
                 .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            bookmarks.toggle(story)
+                        } label: {
+                            Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                                .symbolRenderingMode(.hierarchical)
+                        }
+                        .accessibilityLabel(isBookmarked ? "Remove bookmark" : "Add bookmark")
+                    }
+                }
                 .taskOnce {
                     await loadComments()
                 }
@@ -124,17 +135,7 @@ struct PostDetailView: View {
     private var headerCardWithContextMenu: some View {
         headerCard
             .contextMenu {
-                Button {
-                    copyStoryLink()
-                } label: {
-                    Label("Copy link", systemImage: "link")
-                }
-
-                Button {
-                    copyHNLink()
-                } label: {
-                    Label("Copy HN link", systemImage: "link.badge.plus")
-                }
+                StoryContextMenu(story: story)
             }
     }
 
@@ -188,18 +189,6 @@ struct PostDetailView: View {
 
     private var meshTint: Color {
         Color(hue: meshHue, saturation: 0.2, brightness: 0.94)
-    }
-
-    private var storyLinkString: String {
-        if let url = story.url {
-            url.absoluteString
-        } else {
-            "https://news.ycombinator.com/item?id=\(story.id)"
-        }
-    }
-
-    private var hnLinkString: String {
-        "https://news.ycombinator.com/item?id=\(story.id)"
     }
 
     private var cardBackground: some View {
@@ -261,14 +250,6 @@ struct PostDetailView: View {
         .foregroundStyle(.primary.opacity(0.72))
     }
 
-    private func copyStoryLink() {
-        UIPasteboard.general.string = storyLinkString
-    }
-
-    private func copyHNLink() {
-        UIPasteboard.general.string = hnLinkString
-    }
-
     private var loadingCommentsView: some View {
         VStack {
             Spacer(minLength: 0)
@@ -276,6 +257,10 @@ struct PostDetailView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, minHeight: 360)
+    }
+
+    private var isBookmarked: Bool {
+        bookmarks.isBookmarked(story)
     }
 }
 

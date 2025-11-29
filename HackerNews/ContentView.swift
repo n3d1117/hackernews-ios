@@ -48,6 +48,9 @@ struct ContentView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
+                    NavigationLink(value: AppRoute.bookmarks) {
+                        Label("Bookmarks", systemImage: "bookmark")
+                    }
                     Button {
                         pasteLink()
                     } label: {
@@ -207,27 +210,31 @@ struct ContentView: View {
         if let id = Int(string) {
             return URL(string: "hn://\(id)")
         }
-
+        
         if let url = URL(string: string), HackerNewsLinkParser.storyLink(from: url) != nil {
             return url
         }
-
+        
         if !string.contains("://"),
            let url = URL(string: "https://\(string)"),
            HackerNewsLinkParser.storyLink(from: url) != nil {
             return url
         }
-
+        
         return nil
     }
 }
 
-private struct StoryCard: View {
+struct StoryCard: View {
+    @Environment(\.openURL) private var openURL
+    @Environment(\.bookmarksStore) private var bookmarks
     let story: Story
-    let namespace: Namespace.ID?
+    var namespace: Namespace.ID?
+    var accentColor: Color = .orange
+    var useZoom = true
 
     var body: some View {
-        NavigationLink(value: AppRoute.post(story, useZoom: true)) {
+        NavigationLink(value: AppRoute.post(story, useZoom: useZoom)) {
             header
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -236,6 +243,9 @@ private struct StoryCard: View {
                 .overlay(cardStroke)
         }
         .buttonStyle(.plain)
+        .contextMenu {
+            StoryContextMenu(story: story)
+        }
     }
 
     private var cardBackground: some View {
@@ -244,7 +254,7 @@ private struct StoryCard: View {
                 LinearGradient(
                     colors: [
                         Color(.systemBackground).opacity(0.4),
-                        Color.orange.opacity(0.08)
+                        accentColor.opacity(0.08)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing

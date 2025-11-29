@@ -2,10 +2,13 @@ import SwiftUI
 import Routing
 
 enum AppRoute: Routable {
+    case bookmarks
     case post(Story, commentID: Int? = nil, useZoom: Bool = false)
 
     var id: String {
         switch self {
+        case .bookmarks:
+            return "bookmarks"
         case let .post(story, commentID, _):
             return "post-\(story.id)-\(commentID ?? 0)"
         }
@@ -14,6 +17,8 @@ enum AppRoute: Routable {
     @ViewBuilder
     var destination: some View {
         switch self {
+        case .bookmarks:
+            BookmarksView()
         case let .post(story, commentID, useZoom):
             PostRouteView(story: story, commentID: commentID, useZoom: useZoom)
         }
