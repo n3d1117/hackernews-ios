@@ -40,6 +40,9 @@ struct ContentView: View {
                 ProgressView("Loading stories...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
+            if let errorMessage, stories.isEmpty {
+                errorState(message: errorMessage)
+            }
         }
         .navigationTitle("Hacker News")
         .navigationBarTitleDisplayMode(.inline)
@@ -84,24 +87,9 @@ struct ContentView: View {
 
     @ViewBuilder
     private var content: some View {
-        if let errorMessage, stories.isEmpty {
-            VStack(spacing: 12) {
-                Text("Could not load stories")
-                    .font(.headline)
-                Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                Button("Retry") {
-                    Task { await loadStories() }
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-        } else {
-            VStack(spacing: 14) {
-                ForEach(stories) { story in
-                    StoryCard(story: story, namespace: cardNamespace)
-                }
+        VStack(spacing: 14) {
+            ForEach(stories) { story in
+                StoryCard(story: story, namespace: cardNamespace)
             }
         }
     }
@@ -144,6 +132,62 @@ struct ContentView: View {
 
     private func fetchStories() async throws -> [Story] {
         try await api.frontPageStories()
+    }
+
+    @ViewBuilder
+    private func errorState(message: String) -> some View {
+        VStack(spacing: 12) {
+            Text("Could not load stories")
+                .font(.title2.weight(.semibold))
+            Text(message)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            Button {
+                Task { await loadStories() }
+            } label: {
+                retryButton
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 8)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+    }
+
+    private var retryButton: some View {
+        HStack(spacing: 5) {
+            Image(systemName: "arrow.clockwise")
+                .font(.system(size: 11, weight: .semibold))
+            Text("Retry")
+                .tracking(0.6)
+        }
+        .textCase(.uppercase)
+        .font(.caption2.weight(.semibold))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(
+            Capsule(style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.08),
+                            Color.orange.opacity(0.18)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    Capsule(style: .continuous)
+                        .fill(.ultraThinMaterial.opacity(0.65))
+                )
+        )
+        .overlay(
+            Capsule(style: .continuous)
+                .stroke(Color.white.opacity(0.12), lineWidth: 0.8)
+        )
+        .shadow(color: .black.opacity(0.08), radius: 5, y: 3)
+        .foregroundStyle(.primary.opacity(0.72))
     }
 
     private func pasteLink() {
