@@ -1,6 +1,16 @@
 import Foundation
 
-struct HackerNewsAPI {
+protocol FrontPageService {
+    func frontPageStories(limit: Int, page: Int) async throws -> [Story]
+}
+
+extension FrontPageService {
+    func frontPageStories(page: Int) async throws -> [Story] {
+        try await frontPageStories(limit: 30, page: page)
+    }
+}
+
+struct HackerNewsAPI: FrontPageService {
     private let http: HTTPService
     private let baseURL = URL(string: "https://example.backend")!
     private let headers = ["example-key": "example-value"]
@@ -10,8 +20,11 @@ struct HackerNewsAPI {
         self.http = http
     }
 
-    func frontPageStories(limit: Int = 30) async throws -> [Story] {
-        let items: [FeedStory] = try await http.get(baseURL.appending(path: "news"), headers: headers)
+    func frontPageStories(limit: Int = 30, page: Int = 1) async throws -> [Story] {
+        var components = URLComponents(url: baseURL.appending(path: "news"), resolvingAgainstBaseURL: false)
+        components?.queryItems = [URLQueryItem(name: "page", value: "\(page)")]
+        let url = components?.url ?? baseURL.appending(path: "news")
+        let items: [FeedStory] = try await http.get(url, headers: headers)
         var stories: [Story] = []
         stories.reserveCapacity(min(limit, items.count))
 

@@ -10,12 +10,8 @@ import SwiftUI
 struct ContentView: View {
     @Environment(\.cardNamespace) private var cardNamespace
     @Environment(\.openURL) private var openURL
-
-    private let api = HackerNewsAPI()
     
-    @State private var stories: [Story] = []
-    @State private var isLoading = false
-    @State private var errorMessage: String?
+    @State private var feed = StoryFeedModel()
     @State private var pasteError: String?
 
     var body: some View {
@@ -33,13 +29,13 @@ struct ContentView: View {
                     .padding(.vertical, 12)
             }
             .refreshable {
-                await refreshStories()
+                await feed.refresh()
             }
-            if isLoading && stories.isEmpty {
+            if feed.isLoading && feed.stories.isEmpty {
                 ProgressView("Loading stories...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
-            if let errorMessage, stories.isEmpty {
+            if let errorMessage = feed.errorMessage, feed.stories.isEmpty {
                 errorState(message: errorMessage)
             }
         }
@@ -72,7 +68,7 @@ struct ContentView: View {
             }
         }
         .taskOnce {
-            await loadStories()
+            await feed.loadInitial()
         }
     }
 
@@ -89,51 +85,25 @@ struct ContentView: View {
 
     @ViewBuilder
     private var content: some View {
-        VStack(spacing: 14) {
-            ForEach(stories) { story in
+        LazyVStack(spacing: 14) {
+            ForEach(feed.stories) { story in
                 StoryCard(story: story, namespace: cardNamespace)
+                    .onAppear {
+                        Task {
+                            await feed.loadMoreIfNeeded(for: story)
+                        }
+                    }
+            }
+            if isPaging {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
             }
         }
     }
 
-    @MainActor
-    private func loadStories() async {
-        guard !isLoading else { return }
-        errorMessage = nil
-        isLoading = true
-        defer { isLoading = false }
-
-        do {
-            stories = try await fetchStories()
-        } catch {
-            stories = []
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    private func refreshStories() async {
-        if await MainActor.run(body: { isLoading }) {
-            return
-        }
-
-        do {
-            let latest = try await fetchStories()
-            try await Task.sleep(for: .milliseconds(300))
-            await MainActor.run {
-                errorMessage = nil
-                stories = latest
-            }
-        } catch is CancellationError {
-            return
-        } catch {
-            await MainActor.run {
-                errorMessage = error.localizedDescription
-            }
-        }
-    }
-
-    private func fetchStories() async throws -> [Story] {
-        try await api.frontPageStories()
+    private var isPaging: Bool {
+        feed.isLoading && !feed.stories.isEmpty
     }
 
     @ViewBuilder
@@ -146,7 +116,7 @@ struct ContentView: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             Button {
-                Task { await loadStories() }
+                Task { await feed.refresh() }
             } label: {
                 retryButton
             }

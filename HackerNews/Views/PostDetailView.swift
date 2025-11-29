@@ -57,25 +57,10 @@ struct PostDetailView: View {
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
+                        } else if comments.isEmpty {
+                            emptyCommentsView
                         } else {
-                            VStack(alignment: .leading, spacing: commentSpacing) {
-                                ForEach(Array(comments.enumerated()), id: \.element.id) { index, comment in
-                                    if index > 0 {
-                                        Divider()
-                                            .padding(.vertical, 2)
-                                    }
-                                    CommentView(
-                                        comment: comment,
-                                        depth: 0,
-                                        highlightID: commentID,
-                                        storyID: story.id,
-                                        parentID: nil,
-                                        proxy: proxy,
-                                        scrollToTop: { scrollToTop(proxy) }
-                                    )
-                                }
-                            }
-                            .markdownTheme(.minimalGitHub)
+                            commentsList(proxy)
                         }
                     }
                     .padding(.horizontal)
@@ -182,6 +167,49 @@ struct PostDetailView: View {
             if containsComment(withID: id, in: comment.children) { return true }
         }
         return false
+    }
+
+    @ViewBuilder
+    private func commentsList(_ proxy: ScrollViewProxy) -> some View {
+        VStack(alignment: .leading, spacing: commentSpacing) {
+            ForEach(Array(comments.enumerated()), id: \.element.id) { index, comment in
+                if index > 0 {
+                    Divider()
+                        .padding(.vertical, 2)
+                }
+                CommentView(
+                    comment: comment,
+                    depth: 0,
+                    highlightID: commentID,
+                    storyID: story.id,
+                    parentID: nil,
+                    proxy: proxy,
+                    scrollToTop: { scrollToTop(proxy) }
+                )
+            }
+        }
+        .markdownTheme(.minimalGitHub)
+    }
+
+    private var emptyCommentsView: some View {
+        VStack {
+            Spacer(minLength: 0)
+            VStack(spacing: 8) {
+                Image(systemName: "text.bubble")
+                    .font(.system(size: 25, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Text("No comments yet")
+                    .font(.title2.weight(.semibold))
+                Text("Check back later for discussion.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 220)
+            }
+            .padding(.horizontal, 24)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, minHeight: 360)
     }
 
     private var meshHue: Double {
