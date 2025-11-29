@@ -6,6 +6,7 @@ struct StoryHeaderView: View {
     var content: String?
     var showContent = true
     var showImage = false
+    var showCommentCount = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -90,7 +91,7 @@ struct StoryHeaderView: View {
     private var statsText: Text? {
         dotSeparated([
             story.points.map { Text(quantified($0, singular: "point")) },
-            story.commentsCount.map { Text(quantified($0, singular: "comment")) }
+            showCommentCount ? story.commentsCount.map { Text(quantified($0, singular: "comment")) } : nil
         ].compactMap { $0 })
     }
 

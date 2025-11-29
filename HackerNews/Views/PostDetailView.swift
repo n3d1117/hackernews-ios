@@ -71,13 +71,13 @@ struct PostDetailView: View {
                 .legacyBackButtonTitleHidden()
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            bookmarks.toggle(story)
-                        } label: {
-                            Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                                .symbolRenderingMode(.hierarchical)
-                        }
-                        .accessibilityLabel(isBookmarked ? "Remove bookmark" : "Add bookmark")
+                        bookmarkButton
+                    }
+                    if #available(iOS 26.0, *) {
+                        ToolbarSpacer(.fixed, placement: .topBarTrailing)
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        contextMenuButton
                     }
                 }
                 .taskOnce {
@@ -93,11 +93,11 @@ struct PostDetailView: View {
     @ViewBuilder private var header: some View {
         if let url = story.url {
             Link(destination: url) {
-                headerCardWithContextMenu
+                headerCard
             }
             .buttonStyle(.plain)
         } else {
-            headerCardWithContextMenu
+            headerCard
         }
     }
 
@@ -115,13 +115,6 @@ struct PostDetailView: View {
                         .padding(.bottom, 14)
                         .offset(y: -2)
                 }
-            }
-    }
-
-    private var headerCardWithContextMenu: some View {
-        headerCard
-            .contextMenu {
-                StoryContextMenu(story: story)
             }
     }
 
@@ -286,6 +279,26 @@ struct PostDetailView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, minHeight: 360)
+    }
+
+    private var bookmarkButton: some View {
+        Button {
+            bookmarks.toggle(story)
+        } label: {
+            Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                .symbolRenderingMode(.hierarchical)
+        }
+        .accessibilityLabel(isBookmarked ? "Remove bookmark" : "Add bookmark")
+    }
+
+    private var contextMenuButton: some View {
+        Menu {
+            StoryContextMenu(story: story, includeBookmark: false)
+        } label: {
+            Image(systemName: "ellipsis")
+                .symbolRenderingMode(.hierarchical)
+        }
+        .accessibilityLabel("More actions")
     }
 
     private var isBookmarked: Bool {

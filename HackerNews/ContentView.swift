@@ -84,7 +84,11 @@ struct ContentView: View {
     private var content: some View {
         LazyVStack(spacing: 14) {
             ForEach(feed.stories) { story in
-                StoryCard(story: story, namespace: cardNamespace)
+                StoryCard(
+                    story: story,
+                    namespace: cardNamespace,
+                    showCommentCount: feed.category != .jobs
+                )
                     .onAppear {
                         Task {
                             await feed.loadMoreIfNeeded(for: story)
@@ -217,6 +221,7 @@ struct StoryCard: View {
     var namespace: Namespace.ID?
     var accentColor: Color = .orange
     var useZoom = true
+    var showCommentCount = true
 
     var body: some View {
         NavigationLink(value: AppRoute.post(story, useZoom: useZoom)) {
@@ -259,10 +264,10 @@ struct StoryCard: View {
     @ViewBuilder
     private var header: some View {
         if let namespace {
-            StoryHeaderView(story: story, showContent: false)
+            StoryHeaderView(story: story, showContent: false, showCommentCount: showCommentCount)
                 .matchedTransitionSource(id: story.id, in: namespace)
         } else {
-            StoryHeaderView(story: story, showContent: false)
+            StoryHeaderView(story: story, showContent: false, showCommentCount: showCommentCount)
         }
     }
 }

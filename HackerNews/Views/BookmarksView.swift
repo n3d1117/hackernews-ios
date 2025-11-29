@@ -31,7 +31,12 @@ struct BookmarksView: View {
     private var content: some View {
         VStack(spacing: 14) {
             ForEach(bookmarks.stories) { story in
-                StoryCard(story: story, namespace: cardNamespace, accentColor: .blue)
+                StoryCard(
+                    story: story,
+                    namespace: cardNamespace,
+                    accentColor: .blue,
+                    showCommentCount: story.type != "job"
+                )
             }
         }
     }

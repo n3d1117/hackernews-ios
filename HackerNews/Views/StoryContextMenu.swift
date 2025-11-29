@@ -5,18 +5,21 @@ struct StoryContextMenu: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.bookmarksStore) private var bookmarks
     let story: Story
+    var includeBookmark: Bool = true
 
     var body: some View {
-        Button {
-            bookmarks.toggle(story)
-        } label: {
-            Label(bookmarkTitle, systemImage: bookmarkIcon)
+        if includeBookmark {
+            Button {
+                bookmarks.toggle(story)
+            } label: {
+                Label(bookmarkTitle, systemImage: bookmarkIcon)
+            }
         }
 
         Button {
             openURL(safariURL)
         } label: {
-            Label("Open in Safari", systemImage: "safari")
+            Label("Open Story", systemImage: "safari")
         }
 
         Button {
