@@ -5,9 +5,14 @@ struct StoryHeaderView: View {
     let story: Story
     var content: String?
     var showContent = true
+    var showImage = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
+            if showImage, let imageURL = story.imageURL {
+                headerImage(url: imageURL)
+            }
+
             HStack(spacing: 8) {
                 faviconView
 
@@ -110,5 +115,32 @@ struct StoryHeaderView: View {
     private func quantified(_ value: Int, singular: String, plural: String? = nil) -> String {
         let pluralized = plural ?? singular + "s"
         return "\(value) \(value == 1 ? singular : pluralized)"
+    }
+
+    private func headerImage(url: URL) -> some View {
+        AsyncImage(url: url, transaction: .init(animation: .easeInOut(duration: 0.18))) { phase in
+            switch phase {
+            case let .success(image):
+                image
+                    .resizable()
+                    .scaledToFill()
+            default:
+                LinearGradient(
+                    colors: [
+                        .secondary.opacity(0.14),
+                        .secondary.opacity(0.08)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 190)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.white.opacity(0.06), lineWidth: 1)
+        }
     }
 }

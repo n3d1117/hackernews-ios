@@ -69,6 +69,7 @@ final class BookmarksStore {
         let points: Int?
         let commentsCount: Int?
         let time: TimeInterval?
+        let imageURL: String?
 
         init(_ story: Story) {
             id = story.id
@@ -79,6 +80,7 @@ final class BookmarksStore {
             points = story.points
             commentsCount = story.commentsCount
             time = story.time
+            imageURL = story.imageURL?.absoluteString
         }
 
         var story: Story {
@@ -86,6 +88,7 @@ final class BookmarksStore {
                 id: id,
                 title: title,
                 url: url.flatMap(URL.init(string:)),
+                imageURL: imageURL.flatMap(URL.init(string:)),
                 domain: domain,
                 content: nil,
                 author: author,

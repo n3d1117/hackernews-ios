@@ -353,16 +353,31 @@ private struct CommentView: View {
     private var metaText: Text? {
         switch (comment.author, timestamp) {
         case let (author?, time?):
-            Text(author)
-            + Text(" \u{00b7} ")
-            + Text(time, format: .relative(presentation: .numeric, unitsStyle: .narrow))
+            styledAuthor(author)
+            + separatorText
+            + relativeTimeText(time)
         case let (author?, nil):
-            Text(author)
+            styledAuthor(author)
         case let (nil, time?):
-            Text(time, format: .relative(presentation: .numeric, unitsStyle: .narrow))
+            relativeTimeText(time)
         default:
             nil
         }
+    }
+
+    private func styledAuthor(_ author: String) -> Text {
+        Text(author)
+            .foregroundStyle(.secondary)
+    }
+
+    private var separatorText: Text {
+        Text(" \u{00b7} ")
+            .foregroundStyle(.tertiary)
+    }
+
+    private func relativeTimeText(_ date: Date) -> Text {
+        Text(date, format: .relative(presentation: .numeric, unitsStyle: .narrow))
+            .foregroundStyle(.tertiary)
     }
 
     private var timestamp: Date? {
@@ -396,7 +411,6 @@ private struct CommentView: View {
 
                     metaText
                         .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.secondary.opacity(0.9))
                 }
             }
 

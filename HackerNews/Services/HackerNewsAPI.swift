@@ -22,6 +22,7 @@ struct HackerNewsAPI {
                     id: item.id,
                     title: item.title,
                     url: item.url.flatMap(URL.init(string:)),
+                    imageURL: item.imageURL.flatMap(URL.init(string:)),
                     domain: item.domain,
                     content: content,
                     author: item.user,
@@ -44,6 +45,7 @@ struct HackerNewsAPI {
             id: item.id,
             title: item.title,
             url: item.url.flatMap(URL.init(string:)),
+            imageURL: item.imageURL.flatMap(URL.init(string:)),
             domain: item.domain,
             content: content,
             author: item.user,
@@ -112,6 +114,7 @@ private struct FeedItem: Decodable {
     let time: TimeInterval?
     let type: String?
     let url: String?
+    let imageURL: String?
     let domain: String?
     let commentsCount: Int?
     let content: String?
@@ -125,6 +128,7 @@ private struct FeedItem: Decodable {
         case time
         case type
         case url
+        case imageURL = "image_url"
         case domain
         case commentsCount = "comments_count"
         case content
