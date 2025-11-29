@@ -98,8 +98,7 @@ final class DeepLinkCoordinator {
         defer { isLoading = false }
         do {
             let thread = try await api.storyThread(id: payload.storyID)
-            let shouldZoom = router?.wrappedValue.isEmpty ?? true
-            router?.navigate(to: .post(thread.story, commentID: payload.commentID, useZoom: shouldZoom))
+            router?.navigate(to: .post(thread.story, commentID: payload.commentID))
         } catch {
             safariItem = SafariItem(url: payload.canonicalURL)
         }

@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import UIKit
 
 struct ContentView: View {
     @Environment(\.cardNamespace) private var cardNamespace

@@ -161,7 +161,7 @@ struct PostDetailView: View {
         guard containsComment(withID: targetID, in: comments) else { return }
         didScrollToAnchor = true
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(150))
+            try? await Task.sleep(for: .milliseconds(500))
             withAnimation(.easeInOut(duration: 0.4)) {
                 proxy.scrollTo(targetID, anchor: .top)
             }
