@@ -40,6 +40,7 @@ struct ContentView: View {
             }
         }
         .navigationTitle("Hacker News")
+        .navigationSubtitleIfAvailable(categorySubtitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -105,6 +106,21 @@ struct ContentView: View {
 
     private var isPaging: Bool {
         feed.isLoading && !feed.stories.isEmpty
+    }
+
+    private var categorySubtitle: String {
+        switch feed.category {
+        case .top:
+            "Top Stories"
+        case .new:
+            "New Stories"
+        case .show:
+            "Show HN"
+        case .ask:
+            "Ask HN"
+        case .jobs:
+            "Jobs"
+        }
     }
 
     @ViewBuilder
@@ -177,7 +193,7 @@ struct ContentView: View {
         openURL(url)
     }
 
-private func normalizedURL(from string: String) -> URL? {
+    private func normalizedURL(from string: String) -> URL? {
         if let id = Int(string) {
             return URL(string: "hn://\(id)")
         }
@@ -193,6 +209,17 @@ private func normalizedURL(from string: String) -> URL? {
         }
         
         return nil
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func navigationSubtitleIfAvailable(_ subtitle: String) -> some View {
+        if #available(iOS 26, *) {
+            navigationSubtitle(subtitle)
+        } else {
+            self
+        }
     }
 }
 
