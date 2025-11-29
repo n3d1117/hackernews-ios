@@ -8,10 +8,14 @@ struct StoryHeaderView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if let domainText {
-                Text(domainText.uppercased())
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+            HStack(spacing: 8) {
+                faviconView
+
+                if let domainText {
+                    Text(domainText.uppercased())
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Text(story.title)
@@ -39,8 +43,36 @@ struct StoryHeaderView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    private var faviconView: some View {
+        AsyncImage(url: faviconURL, transaction: .init(animation: .easeInOut(duration: 0.12))) { phase in
+            switch phase {
+            case let .success(image):
+                image
+                    .resizable()
+                    .scaledToFill()
+            default:
+                Image(systemName: "globe")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary.opacity(0.78))
+            }
+        }
+        .frame(width: 14, height: 14)
+        .clipShape(Circle())
+    }
+
     private var domainText: String? {
         story.domain ?? story.url?.host ?? "news.ycombinator.com"
+    }
+
+    private var faviconURL: URL? {
+        guard let host = domainText?
+            .replacingOccurrences(of: "https://", with: "")
+            .replacingOccurrences(of: "http://", with: "")
+            .split(separator: "/")
+            .first
+            .map(String.init) else { return nil }
+
+        return URL(string: "https://icons.duckduckgo.com/ip3/\(host).ico")
     }
 
     private var authorTimeText: Text? {

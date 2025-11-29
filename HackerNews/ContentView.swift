@@ -6,18 +6,15 @@
 //
 
 import SwiftUI
-import Routing
 
 struct ContentView: View {
-    @Environment(\.router) private var router
-    
+    @Environment(\.cardNamespace) private var cardNamespace
+
     private let api = HackerNewsAPI()
     
     @State private var stories: [Story] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
-    
-    @Namespace private var namespace
 
     var body: some View {
         ZStack {
@@ -35,6 +32,10 @@ struct ContentView: View {
             }
             .refreshable {
                 await refresh()
+            }
+            if isLoading && stories.isEmpty {
+                ProgressView("Loading stories...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
         }
         .navigationTitle("Hacker News")
@@ -57,10 +58,7 @@ struct ContentView: View {
 
     @ViewBuilder
     private var content: some View {
-        if isLoading && stories.isEmpty {
-            ProgressView("Loading stories...")
-                .frame(maxWidth: .infinity)
-        } else if let errorMessage, stories.isEmpty {
+        if let errorMessage, stories.isEmpty {
             VStack(spacing: 12) {
                 Text("Could not load stories")
                     .font(.headline)
@@ -76,7 +74,7 @@ struct ContentView: View {
         } else {
             VStack(spacing: 14) {
                 ForEach(stories) { story in
-                    StoryCard(story: story, namespace: namespace)
+                    StoryCard(story: story, namespace: cardNamespace)
                 }
             }
         }
@@ -85,12 +83,12 @@ struct ContentView: View {
     @MainActor
     private func loadStories() async {
         guard !isLoading else { return }
+        errorMessage = nil
         isLoading = true
         defer { isLoading = false }
 
         do {
             stories = try await api.frontPageStories()
-            errorMessage = nil
         } catch {
             stories = []
             errorMessage = error.localizedDescription
@@ -105,16 +103,11 @@ struct ContentView: View {
 
 private struct StoryCard: View {
     let story: Story
-    let namespace: Namespace.ID
+    let namespace: Namespace.ID?
 
     var body: some View {
-        NavigationLink {
-            AppRoute.post(story)
-                .destination
-                .navigationTransition(.zoom(sourceID: story.id, in: namespace))
-        } label: {
-            StoryHeaderView(story: story, showContent: false)
-                .matchedTransitionSource(id: story.id, in: namespace)
+        NavigationLink(value: AppRoute.post(story, useZoom: true)) {
+            header
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(.primary)
@@ -145,6 +138,16 @@ private struct StoryCard: View {
     private var cardStroke: some View {
         RoundedRectangle(cornerRadius: 18, style: .continuous)
             .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+    }
+
+    @ViewBuilder
+    private var header: some View {
+        if let namespace {
+            StoryHeaderView(story: story, showContent: false)
+                .matchedTransitionSource(id: story.id, in: namespace)
+        } else {
+            StoryHeaderView(story: story, showContent: false)
+        }
     }
 }
 

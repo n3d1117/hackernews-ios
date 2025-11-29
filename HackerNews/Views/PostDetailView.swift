@@ -1,8 +1,10 @@
 import SwiftUI
 import MarkdownUI
+import UIKit
 
 private let commentSpacing: CGFloat = 18
 private let highlightOpacity: CGFloat = 0.14
+private let scrollTopAnchorID = "postDetailTopAnchor"
 
 struct PostDetailView: View {
     let story: Story
@@ -27,11 +29,23 @@ struct PostDetailView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
+                        Color.clear
+                            .frame(height: 0)
+                            .id(scrollTopAnchorID)
+
                         header
 
+                        WaveSeparator()
+                            .frame(height: 16)
+                            .padding(.top, 4)
+                        
+                        Text("Comments")
+                            .font(.title2.weight(.semibold))
+                            .foregroundStyle(.primary.opacity(0.94))
+                            .padding(.bottom, 4)
+
                         if isLoading {
-                            ProgressView("Loading comments...")
-                                .frame(maxWidth: .infinity, alignment: .center)
+                            loadingCommentsView
                         } else if let errorMessage {
                             VStack(spacing: 8) {
                                 Text("Could not load comments")
@@ -46,22 +60,21 @@ struct PostDetailView: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
                         } else {
-                            WaveSeparator()
-                                .frame(height: 16)
-                                .padding(.top, 4)
-                            
-                            Text("Comments")
-                                .font(.title2.weight(.semibold))
-                                .foregroundStyle(.primary.opacity(0.94))
-                                .padding(.bottom, 4)
-                            
                             VStack(alignment: .leading, spacing: commentSpacing) {
                                 ForEach(Array(comments.enumerated()), id: \.element.id) { index, comment in
                                     if index > 0 {
                                         Divider()
                                             .padding(.vertical, 2)
                                     }
-                                    CommentView(comment: comment, depth: 0, highlightID: commentID)
+                                    CommentView(
+                                        comment: comment,
+                                        depth: 0,
+                                        highlightID: commentID,
+                                        storyID: story.id,
+                                        parentID: nil,
+                                        proxy: proxy,
+                                        scrollToTop: { scrollToTop(proxy) }
+                                    )
                                 }
                             }
                             .markdownTheme(.minimalGitHub)
@@ -85,11 +98,11 @@ struct PostDetailView: View {
     @ViewBuilder private var header: some View {
         if let url = story.url {
             Link(destination: url) {
-                headerCard
+                headerCardWithContextMenu
             }
             .buttonStyle(.plain)
         } else {
-            headerCard
+            headerCardWithContextMenu
         }
     }
 
@@ -101,10 +114,28 @@ struct PostDetailView: View {
             .overlay(cardStroke)
     }
 
+    private var headerCardWithContextMenu: some View {
+        headerCard
+            .contextMenu {
+                Button {
+                    copyStoryLink()
+                } label: {
+                    Label("Copy link", systemImage: "link")
+                }
+
+                Button {
+                    copyHNLink()
+                } label: {
+                    Label("Copy HN link", systemImage: "link.badge.plus")
+                }
+            }
+    }
+
     @MainActor
     private func loadComments() async {
         guard !isLoading else { return }
         didScrollToAnchor = false
+        errorMessage = nil
         isLoading = true
         defer { isLoading = false }
 
@@ -112,7 +143,6 @@ struct PostDetailView: View {
             let thread = try await api.storyThread(id: story.id)
             storyContent = thread.story.content
             comments = thread.comments
-            errorMessage = nil
         } catch {
             comments = []
             errorMessage = error.localizedDescription
@@ -131,6 +161,12 @@ struct PostDetailView: View {
         }
     }
 
+    private func scrollToTop(_ proxy: ScrollViewProxy) {
+        withAnimation(.easeInOut(duration: 0.35)) {
+            proxy.scrollTo(scrollTopAnchorID, anchor: .top)
+        }
+    }
+
     private func containsComment(withID id: Int, in comments: [Comment]) -> Bool {
         for comment in comments {
             if comment.id == id { return true }
@@ -145,6 +181,18 @@ struct PostDetailView: View {
 
     private var meshTint: Color {
         Color(hue: meshHue, saturation: 0.2, brightness: 0.94)
+    }
+
+    private var storyLinkString: String {
+        if let url = story.url {
+            url.absoluteString
+        } else {
+            "https://news.ycombinator.com/item?id=\(story.id)"
+        }
+    }
+
+    private var hnLinkString: String {
+        "https://news.ycombinator.com/item?id=\(story.id)"
     }
 
     private var cardBackground: some View {
@@ -168,6 +216,23 @@ struct PostDetailView: View {
     private var cardStroke: some View {
         RoundedRectangle(cornerRadius: 18, style: .continuous)
             .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+    }
+
+    private func copyStoryLink() {
+        UIPasteboard.general.string = storyLinkString
+    }
+
+    private func copyHNLink() {
+        UIPasteboard.general.string = hnLinkString
+    }
+
+    private var loadingCommentsView: some View {
+        VStack {
+            Spacer(minLength: 0)
+            ProgressView("Loading comments...")
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, minHeight: 360)
     }
 }
 
@@ -213,6 +278,10 @@ private struct CommentView: View {
     let comment: Comment
     let depth: Int
     let highlightID: Int?
+    let storyID: Int
+    let parentID: Int?
+    let proxy: ScrollViewProxy
+    let scrollToTop: () -> Void
     @State private var isCollapsed = false
     @State private var isHighlightVisible = false
     @State private var hasFlashedHighlight = false
@@ -224,7 +293,15 @@ private struct CommentView: View {
             if !isCollapsed, !comment.children.isEmpty {
                 VStack(alignment: .leading, spacing: commentSpacing) {
                     ForEach(comment.children) { child in
-                        CommentView(comment: child, depth: min(10, depth + 1), highlightID: highlightID)
+                        CommentView(
+                            comment: child,
+                            depth: min(10, depth + 1),
+                            highlightID: highlightID,
+                            storyID: storyID,
+                            parentID: comment.id,
+                            proxy: proxy,
+                            scrollToTop: scrollToTop
+                        )
                     }
                 }
             }
@@ -234,9 +311,7 @@ private struct CommentView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
         .onTapGesture {
-            withAnimation(.easeInOut(duration: 0.25)) {
-                isCollapsed.toggle()
-            }
+            toggleCollapse()
         }
         .onAppear {
             flashHighlightIfNeeded()
@@ -269,6 +344,15 @@ private struct CommentView: View {
         highlightID == comment.id
     }
 
+    private var copyableText: String? {
+        guard let text = comment.content?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return nil }
+        return text
+    }
+
+    private var commentURLString: String {
+        "https://news.ycombinator.com/item?id=\(storyID)#\(comment.id)"
+    }
+
     private var commentBlock: some View {
         let bgPadding = EdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 10)
 
@@ -293,7 +377,6 @@ private struct CommentView: View {
                     .markdownTextStyle {
                         ForegroundColor(.primary.opacity(0.85))
                     }
-                    .textSelection(.enabled)
             }
         }
         .padding(bgPadding)
@@ -306,6 +389,55 @@ private struct CommentView: View {
         .padding(.leading, -bgPadding.leading)
         .padding(.bottom, -bgPadding.bottom)
         .padding(.trailing, -bgPadding.trailing)
+        .contextMenu {
+            Button {
+                copyText()
+            } label: {
+                Label("Copy text", systemImage: "doc.on.doc")
+            }
+            .disabled(copyableText == nil)
+
+            if let parentID {
+                Button {
+                    scrollTo(parentID)
+                } label: {
+                    Label("Parent", systemImage: "arrow.uturn.up")
+                }
+            }
+
+            Button {
+                scrollToTop()
+            } label: {
+                Label("Context", systemImage: "arrow.up.to.line")
+            }
+
+            Button {
+                copyCommentLink()
+            } label: {
+                Label("Copy link", systemImage: "link")
+            }
+        }
+    }
+
+    private func copyText() {
+        guard let copyableText else { return }
+        UIPasteboard.general.string = copyableText
+    }
+
+    private func copyCommentLink() {
+        UIPasteboard.general.string = commentURLString
+    }
+
+    private func scrollTo(_ id: Int) {
+        withAnimation(.easeInOut(duration: 0.35)) {
+            proxy.scrollTo(id, anchor: .top)
+        }
+    }
+
+    private func toggleCollapse() {
+        withAnimation(.easeInOut(duration: 0.25)) {
+            isCollapsed.toggle()
+        }
     }
 
     private func flashHighlightIfNeeded() {

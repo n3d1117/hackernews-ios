@@ -12,13 +12,36 @@ import Routing
 @main
 struct HackerNewsApp: App {
     @State private var coordinator = DeepLinkCoordinator.shared
+    @Namespace private var cardNamespace
 
     var body: some Scene {
         WindowGroup {
             RootView(coordinator: coordinator)
-                .environment(\.openURL, coordinator.openURLAction)
                 .withRouter(\.router)
+                .environment(\.openURL, coordinator.openURLAction)
+                .environment(\.cardNamespace, cardNamespace)
+                .overlay(alignment: .center) {
+                    if coordinator.isLoading {
+                        loadingOverlay
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                            .allowsHitTesting(false)
+                    }
+                }
+                .animation(.easeInOut(duration: 0.2), value: coordinator.isLoading)
         }
+    }
+
+    private var loadingOverlay: some View {
+        ProgressView("Loading story...")
+            .font(.callout.weight(.semibold))
+            .padding(.horizontal, 18)
+            .padding(.vertical, 12)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.12), lineWidth: 0.8)
+            )
+            .shadow(color: .black.opacity(0.12), radius: 16, y: 8)
     }
 }
 
@@ -52,6 +75,7 @@ final class DeepLinkCoordinator {
 
     var router: Router<AppRoute>?
     var safariItem: SafariItem?
+    var isLoading = false
     private let api = HackerNewsAPI()
 
     var openURLAction: OpenURLAction {
@@ -64,14 +88,17 @@ final class DeepLinkCoordinator {
             safariItem = SafariItem(url: url)
             return .handled
         }
+        isLoading = true
         Task { await handle(payload) }
         return .handled
     }
 
     private func handle(_ payload: DeepLinkPayload) async {
+        defer { isLoading = false }
         do {
             let thread = try await api.storyThread(id: payload.storyID)
-            router?.navigate(to: .post(thread.story, commentID: payload.commentID))
+            let shouldZoom = router?.wrappedValue.isEmpty ?? true
+            router?.navigate(to: .post(thread.story, commentID: payload.commentID, useZoom: shouldZoom))
         } catch {
             safariItem = SafariItem(url: payload.canonicalURL)
         }
