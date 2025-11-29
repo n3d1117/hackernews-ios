@@ -16,7 +16,11 @@ final class StoryFeedModel {
     var currentPage = 0
     var errorMessage: String?
 
-    init(api: any FrontPageService = HackerNewsAPI(), prefetchThreshold: Int = 3) {
+    convenience init(prefetchThreshold: Int = 3) {
+        self.init(api: HackerNewsAPI(), prefetchThreshold: prefetchThreshold)
+    }
+
+    init(api: any FrontPageService, prefetchThreshold: Int = 3) {
         self.api = api
         self.prefetchThreshold = max(prefetchThreshold, 1)
     }
