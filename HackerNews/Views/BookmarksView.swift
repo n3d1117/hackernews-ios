@@ -24,6 +24,7 @@ struct BookmarksView: View {
         }
         .navigationTitle("Bookmarks")
         .navigationBarTitleDisplayMode(.inline)
+        .legacyBackButtonTitleHidden()
     }
 
     @ViewBuilder

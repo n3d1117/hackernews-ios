@@ -30,6 +30,7 @@ struct HackerNewsApp: App {
                 }
                 .animation(.easeInOut(duration: 0.2), value: coordinator.isLoading)
                 .allowsHitTesting(!coordinator.isLoading)
+                .legacyOrangeTint()
         }
     }
 
@@ -44,6 +45,17 @@ struct HackerNewsApp: App {
                     .strokeBorder(Color.white.opacity(0.12), lineWidth: 0.8)
             )
             .shadow(color: .black.opacity(0.12), radius: 16, y: 8)
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func legacyOrangeTint() -> some View {
+        if #unavailable(iOS 26) {
+            self.tint(.orange)
+        } else {
+            self
+        }
     }
 }
 

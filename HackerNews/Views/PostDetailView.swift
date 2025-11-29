@@ -83,6 +83,7 @@ struct PostDetailView: View {
                 }
                 .navigationTitle("Post")
                 .navigationBarTitleDisplayMode(.inline)
+                .legacyBackButtonTitleHidden()
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
