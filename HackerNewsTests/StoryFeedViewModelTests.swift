@@ -3,13 +3,13 @@ import Testing
 @testable import HackerNews
 
 @MainActor
-struct StoryFeedModelTests {
+struct StoryFeedViewModelTests {
     @Test func appendsNextPageWithoutDuplicates() async {
         let stub = StubFrontPageService(pages: [
             [story(id: 1), story(id: 2)],
             [story(id: 2), story(id: 3)]
         ])
-        let feed = StoryFeedModel(api: stub, prefetchThreshold: 1)
+        let feed = StoryFeedViewModel(api: stub, prefetchThreshold: 1)
 
         await feed.loadInitial()
         #expect(feed.stories.map(\.id) == [1, 2])
@@ -23,7 +23,7 @@ struct StoryFeedModelTests {
             [story(id: 10)],
             []
         ])
-        let feed = StoryFeedModel(api: stub, prefetchThreshold: 1)
+        let feed = StoryFeedViewModel(api: stub, prefetchThreshold: 1)
 
         await feed.loadInitial()
         await feed.loadMoreIfNeeded(for: feed.stories.last!)
@@ -37,7 +37,7 @@ struct StoryFeedModelTests {
             [story(id: 1), story(id: 2), story(id: 3), story(id: 4)],
             [story(id: 5)]
         ])
-        let feed = StoryFeedModel(api: stub, prefetchThreshold: 2)
+        let feed = StoryFeedViewModel(api: stub, prefetchThreshold: 2)
 
         await feed.loadInitial()
         await feed.loadMoreIfNeeded(for: feed.stories[2])
@@ -50,7 +50,7 @@ struct StoryFeedModelTests {
             .top: [[story(id: 1)], [story(id: 2)]],
             .new: [[story(id: 10)], [story(id: 11)]]
         ])
-        let feed = StoryFeedModel(api: stub, prefetchThreshold: 1)
+        let feed = StoryFeedViewModel(api: stub, prefetchThreshold: 1)
 
         await feed.loadInitial()
         #expect(feed.stories.map(\.id) == [1])

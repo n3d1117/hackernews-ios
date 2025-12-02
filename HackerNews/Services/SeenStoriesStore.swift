@@ -2,13 +2,12 @@ import Foundation
 import Observation
 import SwiftUI
 
+// Tracks which stories have already been opened.
 @MainActor
 @Observable
 final class SeenStoriesStore {
-    static let shared = SeenStoriesStore()
-
-    private let defaults: UserDefaults
-    private let storageKey = "seen_stories"
+    @ObservationIgnored private let defaults: UserDefaults
+    @ObservationIgnored private let storageKey = "seen_stories"
 
     private var ids: Set<Int>
 
@@ -17,21 +16,15 @@ final class SeenStoriesStore {
         ids = Set(defaults.array(forKey: storageKey) as? [Int] ?? [])
     }
 
+    // Indicates whether a story was read before.
     func isSeen(_ story: Story) -> Bool {
         ids.contains(story.id)
     }
 
+    // Marks a story as seen and persists it.
     func markSeen(_ story: Story) {
         guard !ids.contains(story.id) else { return }
         ids.insert(story.id)
         defaults.set(Array(ids), forKey: storageKey)
     }
-}
-
-private struct SeenStoriesStoreKey: EnvironmentKey {
-    static let defaultValue: SeenStoriesStore = .shared
-}
-
-extension EnvironmentValues {
-    @Entry var seenStoriesStore: SeenStoriesStore = .shared
 }

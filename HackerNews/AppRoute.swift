@@ -1,6 +1,7 @@
-import SwiftUI
 import Routing
+import SwiftUI
 
+// Supported navigation routes for the app.
 enum AppRoute: Routable {
     case bookmarks
     case post(Story, commentID: Int? = nil, useZoom: Bool = false)
@@ -25,20 +26,20 @@ enum AppRoute: Routable {
     }
 }
 
-extension EnvironmentValues {
-    @Entry var router: Router<AppRoute> = Router()
-}
-
 private struct PostRouteView: View {
     let story: Story
     let commentID: Int?
     let useZoom: Bool
     @Environment(\.cardNamespace) private var cardNamespace
+    @Environment(\.storyService) private var storyService
 
     @ViewBuilder
     var body: some View {
-        let destination = PostDetailView(story: story, commentID: commentID)
-            .environment(\.openURL, DeepLinkCoordinator.shared.openURLAction)
+        let destination = PostDetailView(
+            story: story,
+            commentID: commentID,
+            service: storyService
+        )
 
         if useZoom, let cardNamespace {
             destination
@@ -46,16 +47,5 @@ private struct PostRouteView: View {
         } else {
             destination
         }
-    }
-}
-
-private struct CardNamespaceKey: EnvironmentKey {
-    static let defaultValue: Namespace.ID? = nil
-}
-
-extension EnvironmentValues {
-    var cardNamespace: Namespace.ID? {
-        get { self[CardNamespaceKey.self] }
-        set { self[CardNamespaceKey.self] = newValue }
     }
 }

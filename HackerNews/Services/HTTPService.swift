@@ -1,5 +1,6 @@
 import Foundation
 
+// Lightweight HTTP client for JSON decoding.
 struct HTTPService {
     enum ServiceError: Swift.Error {
         case invalidResponse

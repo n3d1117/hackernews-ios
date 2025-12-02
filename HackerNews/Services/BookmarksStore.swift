@@ -2,15 +2,14 @@ import Foundation
 import Observation
 import SwiftUI
 
+// Persists and exposes bookmarked stories.
 @MainActor
 @Observable
 final class BookmarksStore {
-    static let shared = BookmarksStore()
-
-    private let defaults: UserDefaults
-    private let storageKey = "bookmarked_stories"
-    private let decoder = JSONDecoder()
-    private let encoder = JSONEncoder()
+    @ObservationIgnored private let defaults: UserDefaults
+    @ObservationIgnored private let storageKey = "bookmarked_stories"
+    @ObservationIgnored private let decoder = JSONDecoder()
+    @ObservationIgnored private let encoder = JSONEncoder()
 
     var stories: [Story] = []
 
@@ -19,10 +18,12 @@ final class BookmarksStore {
         stories = load()
     }
 
+    // Indicates if a story is already bookmarked.
     func isBookmarked(_ story: Story) -> Bool {
         stories.contains { $0.id == story.id }
     }
 
+    // Adds or removes a bookmark in a single call.
     func toggle(_ story: Story) {
         if isBookmarked(story) {
             remove(story)
@@ -31,22 +32,26 @@ final class BookmarksStore {
         }
     }
 
+    // Inserts a story at the top of the bookmark list.
     private func add(_ story: Story) {
         stories.removeAll { $0.id == story.id }
         stories.insert(story, at: 0)
         persist()
     }
 
+    // Removes a bookmarked story.
     private func remove(_ story: Story) {
         stories.removeAll { $0.id == story.id }
         persist()
     }
 
+    // Writes bookmarks to disk.
     private func persist() {
         guard let data = try? encoder.encode(stories.map(BookmarkRecord.init)) else { return }
         defaults.set(data, forKey: storageKey)
     }
 
+    // Loads bookmarks from persisted state.
     private func load() -> [Story] {
         guard let data = defaults.data(forKey: storageKey) else { return [] }
         guard let records = try? decoder.decode([BookmarkRecord].self, from: data) else { return [] }
@@ -99,12 +104,4 @@ final class BookmarksStore {
             )
         }
     }
-}
-
-private struct BookmarksStoreKey: EnvironmentKey {
-    static let defaultValue: BookmarksStore = .shared
-}
-
-extension EnvironmentValues {
-    @Entry var bookmarksStore: BookmarksStore = .shared
 }

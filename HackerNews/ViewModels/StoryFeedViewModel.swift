@@ -1,12 +1,13 @@
 import Foundation
 import Observation
 
+// Drives the front page feed with paging and category changes.
 @MainActor
 @Observable
-final class StoryFeedModel {
-    private let api: any FrontPageService
-    private let prefetchThreshold: Int
-    private var loadTask: Task<Void, Never>?
+final class StoryFeedViewModel {
+    @ObservationIgnored private let api: any FrontPageService
+    @ObservationIgnored private let prefetchThreshold: Int
+    @ObservationIgnored private var loadTask: Task<Void, Never>?
 
     var category: StoryFeedCategory = .top
     var stories: [Story] = []
@@ -16,26 +17,25 @@ final class StoryFeedModel {
     var currentPage = 0
     var errorMessage: String?
 
-    convenience init(prefetchThreshold: Int = 3) {
-        self.init(api: HackerNewsAPI(), prefetchThreshold: prefetchThreshold)
-    }
-
     init(api: any FrontPageService, prefetchThreshold: Int = 3) {
         self.api = api
         self.prefetchThreshold = max(prefetchThreshold, 1)
     }
 
+    // Loads initial feed data if nothing is present.
     func loadInitial() async {
         guard stories.isEmpty else { return }
         await refresh()
     }
 
+    // Switches feed category and refreshes the list.
     func selectCategory(_ category: StoryFeedCategory) async {
         guard self.category != category else { return }
         self.category = category
         await refresh()
     }
 
+    // Resets pagination state and fetches the first page.
     func refresh() async {
         await cancelInFlight()
         stories = []
@@ -46,11 +46,13 @@ final class StoryFeedModel {
         await loadPage(1)
     }
 
+    // Prefetches the next page when the user nears the bottom.
     func loadMoreIfNeeded(for story: Story) async {
         guard shouldPrefetch(for: story) else { return }
         await loadPage(currentPage + 1)
     }
 
+    // Fetches a specific page of stories.
     private func loadPage(_ page: Int) async {
         if page == 1 {
             await cancelInFlight()
@@ -82,6 +84,7 @@ final class StoryFeedModel {
         await task.value
     }
 
+    // Deduplicates and inserts freshly fetched stories.
     private func handleFetched(_ newStories: [Story], page: Int) {
         guard !newStories.isEmpty else {
             hasMorePages = false
@@ -104,6 +107,7 @@ final class StoryFeedModel {
         hasMorePages = true
     }
 
+    // Checks if the next page should be triggered for a given story.
     private func shouldPrefetch(for story: Story) -> Bool {
         guard hasMorePages, loadTask == nil else { return false }
         guard let index = stories.firstIndex(where: { $0.id == story.id }) else { return false }
@@ -111,6 +115,7 @@ final class StoryFeedModel {
         return index >= triggerIndex
     }
 
+    // Cancels any in-flight work to avoid duplicate fetches.
     private func cancelInFlight() async {
         guard let task = loadTask else { return }
         loadTask = nil

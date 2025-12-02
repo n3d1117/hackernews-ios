@@ -1,6 +1,7 @@
 import SwiftUI
 import MarkdownUI
 
+// Shows a story title, metadata, and optional content.
 struct StoryHeaderView: View {
     let story: Story
     var content: String?

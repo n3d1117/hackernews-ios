@@ -1,5 +1,6 @@
 import Foundation
 
+// Fetches front page slices for different story categories.
 protocol FrontPageService {
     func frontPageStories(category: StoryFeedCategory, limit: Int, page: Int) async throws -> [Story]
 }
@@ -14,7 +15,13 @@ extension FrontPageService {
     }
 }
 
-struct HackerNewsAPI: FrontPageService {
+// Fetches story threads with full comment trees.
+protocol StoryThreadService {
+    func storyThread(id: Int) async throws -> StoryThread
+}
+
+// Concrete Hacker News API implementation.
+struct HackerNewsAPI: FrontPageService, StoryThreadService {
     private let http: HTTPService
     private let baseURL = URL(string: "https://example.backend")!
     private let headers = ["example-key": "example-value"]
@@ -24,6 +31,7 @@ struct HackerNewsAPI: FrontPageService {
         self.http = http
     }
 
+    // Returns a page of front page stories for the given category.
     func frontPageStories(category: StoryFeedCategory = .top, limit: Int = 30, page: Int = 1) async throws -> [Story] {
         var components = URLComponents(url: baseURL.appending(path: category.path), resolvingAgainstBaseURL: false)
         components?.queryItems = [URLQueryItem(name: "page", value: "\(page)")]
@@ -38,8 +46,8 @@ struct HackerNewsAPI: FrontPageService {
                 Story(
                     id: item.id,
                     title: item.title,
-                    url: item.url.flatMap(URL.init(string:)),
-                    imageURL: item.imageURL.flatMap(URL.init(string:)),
+                    url: item.url,
+                    imageURL: item.imageURL,
                     domain: item.domain,
                     content: content,
                     author: item.user,
@@ -54,6 +62,7 @@ struct HackerNewsAPI: FrontPageService {
         return stories
     }
 
+    // Returns the full story thread including comments for an item ID.
     func storyThread(id: Int) async throws -> StoryThread {
         let item: FeedItem = try await http.get(baseURL.appending(path: "item/\(id)"), headers: headers)
         let comments = await mapComments(item.comments)
@@ -61,8 +70,8 @@ struct HackerNewsAPI: FrontPageService {
         let story = Story(
             id: item.id,
             title: item.title,
-            url: item.url.flatMap(URL.init(string:)),
-            imageURL: item.imageURL.flatMap(URL.init(string:)),
+            url: item.url,
+            imageURL: item.imageURL,
             domain: item.domain,
             content: content,
             author: item.user,
@@ -74,6 +83,7 @@ struct HackerNewsAPI: FrontPageService {
         return StoryThread(story: story, comments: comments)
     }
 
+    // Recursively maps API comments into domain models while pruning empties.
     private func mapComments(_ comments: [FeedComment]) async -> [Comment] {
         var mapped: [Comment] = []
         mapped.reserveCapacity(comments.count)
@@ -103,8 +113,8 @@ private struct FeedStory: Decodable {
     let time: TimeInterval?
     let commentsCount: Int?
     let type: String?
-    let imageURL: String?
-    let url: String?
+    let imageURL: URL?
+    let url: URL?
     let domain: String?
     let content: String?
 
@@ -121,6 +131,21 @@ private struct FeedStory: Decodable {
         case domain
         case content
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        points = try container.decodeIfPresent(Int.self, forKey: .points)
+        user = try container.decodeIfPresent(String.self, forKey: .user)
+        time = try container.decodeIfPresent(TimeInterval.self, forKey: .time)
+        commentsCount = try container.decodeIfPresent(Int.self, forKey: .commentsCount)
+        type = try container.decodeIfPresent(String.self, forKey: .type)
+        imageURL = try container.decodeLossyURL(forKey: .imageURL)
+        url = try container.decodeLossyURL(forKey: .url)
+        domain = try container.decodeIfPresent(String.self, forKey: .domain)
+        content = try container.decodeIfPresent(String.self, forKey: .content)
+    }
 }
 
 private struct FeedItem: Decodable {
@@ -130,8 +155,8 @@ private struct FeedItem: Decodable {
     let user: String?
     let time: TimeInterval?
     let type: String?
-    let url: String?
-    let imageURL: String?
+    let url: URL?
+    let imageURL: URL?
     let domain: String?
     let commentsCount: Int?
     let content: String?
@@ -150,6 +175,22 @@ private struct FeedItem: Decodable {
         case commentsCount = "comments_count"
         case content
         case comments
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        points = try container.decodeIfPresent(Int.self, forKey: .points)
+        user = try container.decodeIfPresent(String.self, forKey: .user)
+        time = try container.decodeIfPresent(TimeInterval.self, forKey: .time)
+        type = try container.decodeIfPresent(String.self, forKey: .type)
+        url = try container.decodeLossyURL(forKey: .url)
+        imageURL = try container.decodeLossyURL(forKey: .imageURL)
+        domain = try container.decodeIfPresent(String.self, forKey: .domain)
+        commentsCount = try container.decodeIfPresent(Int.self, forKey: .commentsCount)
+        content = try container.decodeIfPresent(String.self, forKey: .content)
+        comments = try container.decodeIfPresent([FeedComment].self, forKey: .comments) ?? []
     }
 }
 

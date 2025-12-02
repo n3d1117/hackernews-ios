@@ -1,0 +1,32 @@
+# macOS
+.DS_Store
+
+# Xcode user data
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+DerivedData/
+
+# Xcode schemes and settings
+xcshareddata/WorkspaceSettings.xcsettings
+*.mode1v3
+*.pbxuser
+*.perspectivev3
+*.xccheckout
+*.xcscmblueprint
+
+# SwiftPM
+.build/
+.swiftpm/
+Package.resolved
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Logs
+*.log
+
+# Swift Package plugins cache
+.plugin-cache/

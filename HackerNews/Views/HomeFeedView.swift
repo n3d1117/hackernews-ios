@@ -1,18 +1,18 @@
-//
-//  ContentView.swift
-//  HackerNews
-//
-//  Created by ned on 17/10/25.
-//
-
+import Observation
 import SwiftUI
+import UIKit
 
-struct ContentView: View {
+// Shows the main Hacker News feed with categories and pagination.
+struct HomeFeedView: View {
     @Environment(\.cardNamespace) private var cardNamespace
     @Environment(\.openURL) private var openURL
-    
-    @State private var feed = StoryFeedModel()
+
+    @State private var viewModel: StoryFeedViewModel
     @State private var pasteError: String?
+
+    init(service: any FrontPageService) {
+        _viewModel = State(initialValue: StoryFeedViewModel(api: service))
+    }
 
     var body: some View {
         ZStack {
@@ -24,19 +24,21 @@ struct ContentView: View {
                 intensity: 0.22
             )
             ScrollView {
-                content
+                FeedListView(viewModel: viewModel, namespace: cardNamespace)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
             }
             .refreshable {
-                await feed.refresh()
+                await viewModel.refresh()
             }
-            if feed.isLoading && feed.stories.isEmpty {
+            if viewModel.isLoading && viewModel.stories.isEmpty {
                 ProgressView("Loading stories...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
-            if let errorMessage = feed.errorMessage, feed.stories.isEmpty {
-                errorState(message: errorMessage)
+            if let errorMessage = viewModel.errorMessage, viewModel.stories.isEmpty {
+                FeedErrorView(message: errorMessage) {
+                    Task { await viewModel.refresh() }
+                }
             }
         }
         .navigationTitle("Hacker News")
@@ -44,12 +46,7 @@ struct ContentView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                CategorySelector(selection: Binding(
-                    get: { feed.category },
-                    set: { category in
-                        Task { await feed.selectCategory(category) }
-                    }
-                ))
+                CategorySelector(selection: categoryBinding)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
@@ -77,39 +74,12 @@ struct ContentView: View {
             }
         }
         .taskOnce {
-            await feed.loadInitial()
+            await viewModel.loadInitial()
         }
-    }
-
-    @ViewBuilder
-    private var content: some View {
-        LazyVStack(spacing: 14) {
-            ForEach(feed.stories) { story in
-                StoryCard(
-                    story: story,
-                    namespace: cardNamespace,
-                    showCommentCount: feed.category != .jobs
-                )
-                    .onAppear {
-                        Task {
-                            await feed.loadMoreIfNeeded(for: story)
-                        }
-                    }
-            }
-            if isPaging {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-            }
-        }
-    }
-
-    private var isPaging: Bool {
-        feed.isLoading && !feed.stories.isEmpty
     }
 
     private var categorySubtitle: String {
-        switch feed.category {
+        switch viewModel.category {
         case .top:
             "Top Stories"
         case .new:
@@ -123,8 +93,69 @@ struct ContentView: View {
         }
     }
 
-    @ViewBuilder
-    private func errorState(message: String) -> some View {
+    private var categoryBinding: Binding<StoryFeedCategory> {
+        Binding(
+            get: { viewModel.category },
+            set: { category in
+                Task { await viewModel.selectCategory(category) }
+            }
+        )
+    }
+
+    // Attempts to open a link from the clipboard.
+    private func pasteLink() {
+        guard let clipboard = UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines), !clipboard.isEmpty else {
+            pasteError = "Clipboard is empty."
+            return
+        }
+
+        guard let url = HackerNewsLinkParser.normalizedURL(from: clipboard) else {
+            pasteError = "Paste a valid Hacker News link."
+            return
+        }
+
+        openURL(url)
+    }
+}
+
+// Feed content list with infinite scroll trigger.
+private struct FeedListView: View {
+    @Bindable var viewModel: StoryFeedViewModel
+    let namespace: Namespace.ID?
+
+    var body: some View {
+        LazyVStack(spacing: 14) {
+            ForEach(viewModel.stories) { story in
+                StoryCard(
+                    story: story,
+                    namespace: namespace,
+                    showCommentCount: viewModel.category != .jobs
+                )
+                .onAppear {
+                    Task {
+                        await viewModel.loadMoreIfNeeded(for: story)
+                    }
+                }
+            }
+            if isPaging {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+            }
+        }
+    }
+
+    private var isPaging: Bool {
+        viewModel.isLoading && !viewModel.stories.isEmpty
+    }
+}
+
+// Error placeholder with retry action.
+private struct FeedErrorView: View {
+    let message: String
+    let onRetry: () -> Void
+
+    var body: some View {
         VStack(spacing: 12) {
             Text("Could not load stories")
                 .font(.title2.weight(.semibold))
@@ -132,18 +163,18 @@ struct ContentView: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-            Button {
-                Task { await feed.refresh() }
-            } label: {
-                retryButton
+            Button(action: onRetry) {
+                RetryButtonView()
             }
             .buttonStyle(.plain)
             .padding(.top, 8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
+}
 
-    private var retryButton: some View {
+private struct RetryButtonView: View {
+    var body: some View {
         HStack(spacing: 5) {
             Image(systemName: "arrow.clockwise")
                 .font(.system(size: 11, weight: .semibold))
@@ -178,38 +209,6 @@ struct ContentView: View {
         .shadow(color: .black.opacity(0.08), radius: 5, y: 3)
         .foregroundStyle(.primary.opacity(0.72))
     }
-
-    private func pasteLink() {
-        guard let clipboard = UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines), !clipboard.isEmpty else {
-            pasteError = "Clipboard is empty."
-            return
-        }
-
-        guard let url = normalizedURL(from: clipboard) else {
-            pasteError = "Paste a valid Hacker News link."
-            return
-        }
-
-        openURL(url)
-    }
-
-    private func normalizedURL(from string: String) -> URL? {
-        if let id = Int(string) {
-            return URL(string: "hn://\(id)")
-        }
-        
-        if let url = URL(string: string), HackerNewsLinkParser.storyLink(from: url) != nil {
-            return url
-        }
-        
-        if !string.contains("://"),
-           let url = URL(string: "https://\(string)"),
-           HackerNewsLinkParser.storyLink(from: url) != nil {
-            return url
-        }
-        
-        return nil
-    }
 }
 
 private extension View {
@@ -223,6 +222,7 @@ private extension View {
     }
 }
 
+// Menu for selecting a feed category.
 private struct CategorySelector: View {
     let selection: Binding<StoryFeedCategory>
 
@@ -241,9 +241,8 @@ private struct CategorySelector: View {
     }
 }
 
+// Card summarizing a story in the feed.
 struct StoryCard: View {
-    @Environment(\.openURL) private var openURL
-    @Environment(\.bookmarksStore) private var bookmarks
     @Environment(\.seenStoriesStore) private var seenStories
     let story: Story
     var namespace: Namespace.ID?
@@ -302,8 +301,4 @@ struct StoryCard: View {
     private var isSeen: Bool {
         seenStories.isSeen(story)
     }
-}
-
-#Preview {
-    ContentView()
 }

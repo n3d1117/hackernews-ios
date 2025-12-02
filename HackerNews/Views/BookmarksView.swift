@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Lists stories saved by the user.
 struct BookmarksView: View {
     @Environment(\.cardNamespace) private var cardNamespace
     @Environment(\.bookmarksStore) private var bookmarks

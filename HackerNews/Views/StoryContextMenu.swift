@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 
+// Provides quick actions for a story card.
 struct StoryContextMenu: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.bookmarksStore) private var bookmarks
