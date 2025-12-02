@@ -106,8 +106,5 @@ private struct BookmarksStoreKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
-    var bookmarksStore: BookmarksStore {
-        get { self[BookmarksStoreKey.self] }
-        set { self[BookmarksStoreKey.self] = newValue }
-    }
+    @Entry var bookmarksStore: BookmarksStore = .shared
 }

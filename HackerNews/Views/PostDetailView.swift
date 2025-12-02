@@ -7,6 +7,7 @@ private let scrollTopAnchorID = "postDetailTopAnchor"
 
 struct PostDetailView: View {
     @Environment(\.bookmarksStore) private var bookmarks
+    @Environment(\.seenStoriesStore) private var seenStories
     let story: Story
     let commentID: Int?
     private let api = HackerNewsAPI()
@@ -81,6 +82,7 @@ struct PostDetailView: View {
                     }
                 }
                 .taskOnce {
+                    await seenStories.markSeen(story)
                     await loadComments()
                 }
                 .onChange(of: comments) {

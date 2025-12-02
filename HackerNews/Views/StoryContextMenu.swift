@@ -4,6 +4,7 @@ import UIKit
 struct StoryContextMenu: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.bookmarksStore) private var bookmarks
+    @Environment(\.seenStoriesStore) private var seenStories
     let story: Story
     var includeBookmark: Bool = true
 
@@ -17,6 +18,7 @@ struct StoryContextMenu: View {
         }
 
         Button {
+            seenStories.markSeen(story)
             openURL(safariURL)
         } label: {
             Label("Open Story", systemImage: "safari")

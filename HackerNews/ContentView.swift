@@ -244,6 +244,7 @@ private struct CategorySelector: View {
 struct StoryCard: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.bookmarksStore) private var bookmarks
+    @Environment(\.seenStoriesStore) private var seenStories
     let story: Story
     var namespace: Namespace.ID?
     var accentColor: Color = .orange
@@ -291,11 +292,15 @@ struct StoryCard: View {
     @ViewBuilder
     private var header: some View {
         if let namespace {
-            StoryHeaderView(story: story, showContent: false, showCommentCount: showCommentCount)
+            StoryHeaderView(story: story, showContent: false, showCommentCount: showCommentCount, isSeen: isSeen)
                 .matchedTransitionSource(id: story.id, in: namespace)
         } else {
-            StoryHeaderView(story: story, showContent: false, showCommentCount: showCommentCount)
+            StoryHeaderView(story: story, showContent: false, showCommentCount: showCommentCount, isSeen: isSeen)
         }
+    }
+
+    private var isSeen: Bool {
+        seenStories.isSeen(story)
     }
 }
 

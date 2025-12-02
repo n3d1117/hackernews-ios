@@ -21,6 +21,7 @@ struct HackerNewsApp: App {
                 .environment(\.openURL, coordinator.openURLAction)
                 .environment(\.cardNamespace, cardNamespace)
                 .environment(\.bookmarksStore, BookmarksStore.shared)
+                .environment(\.seenStoriesStore, SeenStoriesStore.shared)
                 .overlay(alignment: .center) {
                     if coordinator.isLoading {
                         loadingOverlay

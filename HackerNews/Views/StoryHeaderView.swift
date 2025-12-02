@@ -7,6 +7,7 @@ struct StoryHeaderView: View {
     var showContent = true
     var showImage = false
     var showCommentCount = true
+    var isSeen = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -26,6 +27,7 @@ struct StoryHeaderView: View {
 
             Text(story.title)
                 .font(.title3.weight(.semibold))
+                .foregroundStyle(isSeen ? .secondary : .primary)
                 .multilineTextAlignment(.leading)
 
             if showContent, let content = trimmedContent {
@@ -50,7 +52,7 @@ struct StoryHeaderView: View {
     }
 
     private var faviconView: some View {
-        AsyncImage(url: faviconURL, transaction: .init(animation: .easeInOut(duration: 0.12))) { phase in
+        AsyncImage(url: faviconURL) { phase in
             switch phase {
             case let .success(image):
                 image
