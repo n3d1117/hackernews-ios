@@ -29,7 +29,7 @@ struct HomeFeedView: View {
                     .padding(.vertical, 12)
             }
             .refreshable {
-                await viewModel.refresh()
+                await viewModel.refresh(isUserInitiated: true)
             }
             if viewModel.isLoading && viewModel.stories.isEmpty {
                 ProgressView("Loading stories...")

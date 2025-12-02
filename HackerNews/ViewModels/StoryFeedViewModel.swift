@@ -36,14 +36,18 @@ final class StoryFeedViewModel {
     }
 
     // Resets pagination state and fetches the first page.
-    func refresh() async {
-        await cancelInFlight()
-        stories = []
-        loadedIDs = []
-        hasMorePages = true
-        currentPage = 0
-        errorMessage = nil
+    func refresh(isUserInitiated: Bool = false) async {
+        await waitForInFlight()
+        let clock = ContinuousClock()
+        let start = clock.now
         await loadPage(1)
+        if isUserInitiated {
+            let elapsed = start.duration(to: clock.now)
+            let remaining = .milliseconds(500) - elapsed
+            if remaining > .zero {
+                try? await Task.sleep(for: remaining)
+            }
+        }
     }
 
     // Prefetches the next page when the user nears the bottom.
@@ -54,25 +58,25 @@ final class StoryFeedViewModel {
 
     // Fetches a specific page of stories.
     private func loadPage(_ page: Int) async {
-        if page == 1 {
-            await cancelInFlight()
-        }
-        guard hasMorePages else { return }
         guard loadTask == nil else { return }
+        guard page == 1 || hasMorePages else { return }
 
+        let showLoading = stories.isEmpty || page > 1
         let task = Task { [weak self] in
             guard let self else { return }
-            self.isLoading = true
+            if showLoading {
+                self.isLoading = true
+            }
             defer {
-                self.isLoading = false
+                if showLoading {
+                    self.isLoading = false
+                }
                 self.loadTask = nil
             }
 
             do {
                 let fetched = try await self.api.frontPageStories(category: self.category, page: page)
                 self.handleFetched(fetched, page: page)
-            } catch is CancellationError {
-                return
             } catch {
                 if page == 1 {
                     self.errorMessage = error.localizedDescription
@@ -91,20 +95,21 @@ final class StoryFeedViewModel {
             return
         }
 
-        let fresh = newStories.filter { !loadedIDs.contains($0.id) }
-        guard !fresh.isEmpty else {
-            hasMorePages = false
-            return
-        }
-
         if page == 1 {
-            stories = fresh
+            stories = newStories
+            loadedIDs = Set(newStories.map(\.id))
         } else {
+            let fresh = newStories.filter { !loadedIDs.contains($0.id) }
+            guard !fresh.isEmpty else {
+                hasMorePages = false
+                return
+            }
             stories.append(contentsOf: fresh)
+            loadedIDs.formUnion(fresh.map(\.id))
         }
-        loadedIDs.formUnion(fresh.map(\.id))
         currentPage = page
         hasMorePages = true
+        errorMessage = nil
     }
 
     // Checks if the next page should be triggered for a given story.
@@ -115,12 +120,9 @@ final class StoryFeedViewModel {
         return index >= triggerIndex
     }
 
-    // Cancels any in-flight work to avoid duplicate fetches.
-    private func cancelInFlight() async {
+    // Waits for any in-flight work to finish before continuing.
+    private func waitForInFlight() async {
         guard let task = loadTask else { return }
-        loadTask = nil
-        isLoading = false
-        task.cancel()
         await task.value
     }
 }
