@@ -14,17 +14,31 @@ struct CommentSectionView: View {
 
     var body: some View {
         Group {
-            if viewModel.isLoading {
+            switch state {
+            case .loading:
                 loadingCommentsView
-            } else if let errorMessage = viewModel.errorMessage {
-                errorView(message: errorMessage)
-            } else if viewModel.comments.isEmpty {
+            case let .error(message):
+                errorView(message: message)
+            case .empty:
                 emptyCommentsView
-            } else {
+            case .loaded:
                 commentsList
             }
         }
         .markdownTheme(.minimalGitHub)
+    }
+
+    private var state: CommentState {
+        if viewModel.isLoading {
+            return .loading
+        }
+        if let errorMessage = viewModel.errorMessage {
+            return .error(errorMessage)
+        }
+        if viewModel.comments.isEmpty {
+            return .empty
+        }
+        return .loaded
     }
 
     private var commentsList: some View {
@@ -91,4 +105,11 @@ struct CommentSectionView: View {
         }
         .frame(maxWidth: .infinity, alignment: .center)
     }
+}
+
+private enum CommentState {
+    case loading
+    case error(String)
+    case empty
+    case loaded
 }

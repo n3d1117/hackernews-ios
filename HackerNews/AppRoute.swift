@@ -19,14 +19,20 @@ enum AppRoute: Routable {
     var destination: some View {
         switch self {
         case .bookmarks:
-            BookmarksView()
+            BookmarksDestination()
         case let .post(story, commentID, useZoom):
-            PostRouteView(story: story, commentID: commentID, useZoom: useZoom)
+            PostRouteDestination(story: story, commentID: commentID, useZoom: useZoom)
         }
     }
 }
 
-private struct PostRouteView: View {
+private struct BookmarksDestination: View {
+    var body: some View {
+        BookmarksView()
+    }
+}
+
+private struct PostRouteDestination: View {
     let story: Story
     let commentID: Int?
     let useZoom: Bool

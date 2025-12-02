@@ -41,7 +41,7 @@ struct HackerNewsAPI: FrontPageService, StoryThreadService {
         stories.reserveCapacity(min(limit, items.count))
 
         for item in items.prefix(limit) {
-            let content = await markdown.convert(item.content)
+            let content = await markdown.convert(item.content, cacheKey: "story-content-\(item.id)")
             stories.append(
                 Story(
                     id: item.id,
@@ -66,7 +66,7 @@ struct HackerNewsAPI: FrontPageService, StoryThreadService {
     func storyThread(id: Int) async throws -> StoryThread {
         let item: FeedItem = try await http.get(baseURL.appending(path: "item/\(id)"), headers: headers)
         let comments = await mapComments(item.comments)
-        let content = await markdown.convert(item.content)
+        let content = await markdown.convert(item.content, cacheKey: "story-content-\(item.id)")
         let story = Story(
             id: item.id,
             title: item.title,
@@ -89,7 +89,7 @@ struct HackerNewsAPI: FrontPageService, StoryThreadService {
         mapped.reserveCapacity(comments.count)
         for comment in comments {
             let children = await mapComments(comment.comments)
-            let content = await markdown.convert(comment.content)
+            let content = await markdown.convert(comment.content, cacheKey: "comment-\(comment.id)")
             let node = Comment(
                 id: comment.id,
                 author: comment.user,

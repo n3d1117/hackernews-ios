@@ -8,6 +8,11 @@ struct AppRootView: View {
     @Bindable private var coordinator: DeepLinkCoordinator
     private let api: HackerNewsAPI
 
+    init(dependencies: AppDependencies) {
+        self._coordinator = Bindable(wrappedValue: dependencies.coordinator)
+        self.api = dependencies.api
+    }
+
     init(coordinator: DeepLinkCoordinator, api: HackerNewsAPI) {
         self._coordinator = Bindable(wrappedValue: coordinator)
         self.api = api

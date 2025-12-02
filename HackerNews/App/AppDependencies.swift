@@ -5,10 +5,23 @@ struct AppDependencies {
     let seenStoriesStore: SeenStoriesStore
     let coordinator: DeepLinkCoordinator
 
-    init() {
-        self.api = HackerNewsAPI()
-        self.bookmarksStore = BookmarksStore()
-        self.seenStoriesStore = SeenStoriesStore()
-        self.coordinator = DeepLinkCoordinator(api: api)
+    init(
+        api: HackerNewsAPI,
+        bookmarksStore: BookmarksStore,
+        seenStoriesStore: SeenStoriesStore,
+        coordinator: DeepLinkCoordinator? = nil
+    ) {
+        self.api = api
+        self.bookmarksStore = bookmarksStore
+        self.seenStoriesStore = seenStoriesStore
+        self.coordinator = coordinator ?? DeepLinkCoordinator(api: api)
+    }
+
+    static var live: AppDependencies {
+        AppDependencies(
+            api: HackerNewsAPI(),
+            bookmarksStore: BookmarksStore(),
+            seenStoriesStore: SeenStoriesStore()
+        )
     }
 }

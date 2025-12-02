@@ -6,6 +6,11 @@ extension EnvironmentValues {
     @Entry var router: Router<AppRoute> = Router()
 }
 
+// App dependency container.
+extension EnvironmentValues {
+    @Entry var dependencies: AppDependencies = .live
+}
+
 // Namespace used for matched zoom transitions.
 extension EnvironmentValues {
     @Entry var cardNamespace: Namespace.ID? = nil

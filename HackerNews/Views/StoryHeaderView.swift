@@ -16,15 +16,7 @@ struct StoryHeaderView: View {
                 headerImage(url: imageURL)
             }
 
-            HStack(spacing: 8) {
-                faviconView
-
-                if let domainText {
-                    Text(domainText.uppercased())
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                }
-            }
+            StoryHeaderMeta(domainText: domainText, faviconURL: faviconURL)
 
             Text(story.title)
                 .font(.title3.weight(.semibold))
@@ -37,11 +29,7 @@ struct StoryHeaderView: View {
                     .markdownTheme(.minimalGitHub)
             }
 
-            if let authorTimeText {
-                authorTimeText
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary.opacity(0.92))
-            }
+            StoryHeaderAuthorTime(text: authorTimeText)
 
             if let statsText {
                 statsText
@@ -50,23 +38,6 @@ struct StoryHeaderView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var faviconView: some View {
-        AsyncImage(url: faviconURL) { phase in
-            switch phase {
-            case let .success(image):
-                image
-                    .resizable()
-                    .scaledToFill()
-            default:
-                Image(systemName: "globe")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.secondary.opacity(0.78))
-            }
-        }
-        .frame(width: 14, height: 14)
-        .clipShape(Circle())
     }
 
     private var domainText: String? {

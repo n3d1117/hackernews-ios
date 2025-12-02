@@ -69,13 +69,16 @@ struct PostDetailView: View {
                     }
                 }
                 .taskOnce {
-                    await MainActor.run {
-                        seenStories.markSeen(viewModel.story)
-                    }
+                    await seenStories.markSeen(viewModel.story)
                     await viewModel.loadComments()
                 }
                 .onChange(of: viewModel.comments) {
                     scrollToAnchorIfNeeded(proxy)
+                }
+                .onChange(of: viewModel.isLoading) {
+                    if viewModel.isLoading {
+                        didScrollToAnchor = false
+                    }
                 }
             }
         }
@@ -111,7 +114,7 @@ struct PostDetailView: View {
 
     private var bookmarkButton: some View {
         Button {
-            bookmarks.toggle(viewModel.story)
+            bookmarks.toggleAsync(viewModel.story)
         } label: {
             Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
                 .symbolRenderingMode(.hierarchical)

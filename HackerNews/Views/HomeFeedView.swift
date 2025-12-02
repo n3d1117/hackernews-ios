@@ -242,7 +242,7 @@ private struct CategorySelector: View {
 }
 
 // Card summarizing a story in the feed.
-struct StoryCard: View {
+struct StoryCard: View, Equatable {
     @Environment(\.seenStoriesStore) private var seenStories
     let story: Story
     var namespace: Namespace.ID?
@@ -276,5 +276,12 @@ struct StoryCard: View {
 
     private var isSeen: Bool {
         seenStories.isSeen(story)
+    }
+
+    static func == (lhs: StoryCard, rhs: StoryCard) -> Bool {
+        lhs.story == rhs.story
+        && lhs.accentColor == rhs.accentColor
+        && lhs.useZoom == rhs.useZoom
+        && lhs.showCommentCount == rhs.showCommentCount
     }
 }

@@ -6,16 +6,13 @@ import SwiftUI
 @MainActor
 @Observable
 final class BookmarksStore {
-    @ObservationIgnored private let defaults: UserDefaults
-    @ObservationIgnored private let storageKey = "bookmarked_stories"
-    @ObservationIgnored private let decoder = JSONDecoder()
-    @ObservationIgnored private let encoder = JSONEncoder()
+    @ObservationIgnored private let persistence: BookmarkPersistenceActor
 
     var stories: [Story] = []
 
     init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
-        stories = load()
+        self.persistence = BookmarkPersistenceActor(defaults: defaults)
+        stories = deduplicate(persistence.initialRecords.map(\.story))
     }
 
     // Indicates if a story is already bookmarked.
@@ -23,49 +20,51 @@ final class BookmarksStore {
         stories.contains { $0.id == story.id }
     }
 
+    // Convenience to toggle synchronously by spawning a Task.
+    func toggleAsync(_ story: Story) {
+        Task { await toggle(story) }
+    }
+
     // Adds or removes a bookmark in a single call.
-    func toggle(_ story: Story) {
+    func toggle(_ story: Story) async {
         if isBookmarked(story) {
-            remove(story)
+            await remove(story)
         } else {
-            add(story)
+            await add(story)
         }
     }
 
     // Inserts a story at the top of the bookmark list.
-    private func add(_ story: Story) {
+    private func add(_ story: Story) async {
         stories.removeAll { $0.id == story.id }
         stories.insert(story, at: 0)
-        persist()
+        await persist()
     }
 
     // Removes a bookmarked story.
-    private func remove(_ story: Story) {
+    private func remove(_ story: Story) async {
         stories.removeAll { $0.id == story.id }
-        persist()
+        await persist()
     }
 
     // Writes bookmarks to disk.
-    private func persist() {
-        guard let data = try? encoder.encode(stories.map(BookmarkRecord.init)) else { return }
-        defaults.set(data, forKey: storageKey)
+    private func persist() async {
+        let records = stories.map(BookmarkRecord.init)
+        await persistence.persist(records: records)
     }
 
-    // Loads bookmarks from persisted state.
-    private func load() -> [Story] {
-        guard let data = defaults.data(forKey: storageKey) else { return [] }
-        guard let records = try? decoder.decode([BookmarkRecord].self, from: data) else { return [] }
+    private func deduplicate(_ items: [Story]) -> [Story] {
         var unique: [Story] = []
         var seen = Set<Int>()
-        for record in records {
-            guard !seen.contains(record.id) else { continue }
-            seen.insert(record.id)
-            unique.append(record.story)
+        for story in items {
+            guard !seen.contains(story.id) else { continue }
+            seen.insert(story.id)
+            unique.append(story)
         }
         return unique
     }
 
-    private struct BookmarkRecord: Codable {
+    struct BookmarkRecord: Codable {
         let id: Int
         let title: String
         let url: String?
@@ -102,6 +101,29 @@ final class BookmarksStore {
                 time: time,
                 type: nil
             )
+        }
+    }
+
+    private actor BookmarkPersistenceActor {
+        nonisolated let initialRecords: [BookmarkRecord]
+        private let defaults: UserDefaults
+        private let storageKey = "bookmarked_stories"
+        private let decoder = JSONDecoder()
+        private let encoder = JSONEncoder()
+
+        init(defaults: UserDefaults = .standard) {
+            self.defaults = defaults
+            if let data = defaults.data(forKey: storageKey),
+               let records = try? decoder.decode([BookmarkRecord].self, from: data) {
+                self.initialRecords = records
+            } else {
+                self.initialRecords = []
+            }
+        }
+
+        func persist(records: [BookmarkRecord]) {
+            guard let data = try? encoder.encode(records) else { return }
+            defaults.set(data, forKey: storageKey)
         }
     }
 }

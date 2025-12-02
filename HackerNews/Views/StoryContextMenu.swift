@@ -12,14 +12,14 @@ struct StoryContextMenu: View {
     var body: some View {
         if includeBookmark {
             Button {
-                bookmarks.toggle(story)
+                bookmarks.toggleAsync(story)
             } label: {
                 Label(bookmarkTitle, systemImage: bookmarkIcon)
             }
         }
 
         Button {
-            seenStories.markSeen(story)
+            seenStories.markSeenAsync(story)
             openURL(safariURL)
         } label: {
             Label("Open Story", systemImage: "safari")

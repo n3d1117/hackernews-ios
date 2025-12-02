@@ -3,32 +3,27 @@ import Routing
 
 // Application entry point that wires shared dependencies into the environment.
 @main
+@MainActor
 struct HackerNewsApp: App {
-    @State private var dependencies = AppDependencies()
+    @State private var dependencies = AppDependencies.live
     @Namespace private var cardNamespace
 
     var body: some Scene {
         WindowGroup {
-            AppRootView(
-                coordinator: dependencies.coordinator,
-                api: dependencies.api
-            )
-            .withRouter(\.router)
-            .environment(\.openURL, dependencies.coordinator.openURLAction)
-            .environment(\.cardNamespace, cardNamespace)
-            .environment(\.bookmarksStore, dependencies.bookmarksStore)
-            .environment(\.seenStoriesStore, dependencies.seenStoriesStore)
-            .environment(\.storyService, dependencies.api)
-            .overlay(alignment: .center) {
-                if dependencies.coordinator.isLoading {
-                    loadingOverlay
-                        .transition(.opacity.combined(with: .scale(scale: 0.98)))
-                        .allowsHitTesting(false)
+            AppRootView(coordinator: dependencies.coordinator, api: dependencies.api)
+                .withRouter(\.router)
+                .injectAppDependencies(dependencies)
+                .environment(\.cardNamespace, cardNamespace)
+                .overlay(alignment: .center) {
+                    if dependencies.coordinator.isLoading {
+                        loadingOverlay
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                            .allowsHitTesting(false)
+                    }
                 }
-            }
-            .animation(.easeInOut(duration: 0.2), value: dependencies.coordinator.isLoading)
-            .allowsHitTesting(!dependencies.coordinator.isLoading)
-            .legacyOrangeTint()
+                .animation(.easeInOut(duration: 0.2), value: dependencies.coordinator.isLoading)
+                .allowsHitTesting(!dependencies.coordinator.isLoading)
+                .legacyOrangeTint()
         }
     }
 

@@ -4,11 +4,11 @@ import Testing
 
 @MainActor
 struct BookmarksStoreTests {
-    @Test func savesAndLoadsBookmark() {
+    @Test func savesAndLoadsBookmark() async {
         let (store, defaults, suite) = makeStore()
         let story = sampleStory(id: 1)
 
-        store.toggle(story)
+        await store.toggle(story)
 
         let restored = BookmarksStore(defaults: defaults)
         #expect(restored.isBookmarked(story))
@@ -18,12 +18,12 @@ struct BookmarksStoreTests {
         defaults.removePersistentDomain(forName: suite)
     }
 
-    @Test func removesBookmark() {
+    @Test func removesBookmark() async {
         let (store, defaults, suite) = makeStore()
         let story = sampleStory(id: 2)
 
-        store.toggle(story) // add
-        store.toggle(story) // remove
+        await store.toggle(story) // add
+        await store.toggle(story) // remove
 
         let restored = BookmarksStore(defaults: defaults)
         #expect(restored.isBookmarked(story) == false)

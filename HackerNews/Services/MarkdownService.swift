@@ -1,8 +1,16 @@
 import Foundation
 
 actor MarkdownService {
-    func convert(_ html: String?) -> String? {
-        guard var text = html, !text.isEmpty else { return html }
+    private var cache: [String: String?] = [:]
+
+    func convert(_ html: String?, cacheKey: String? = nil) -> String? {
+        if let cacheKey, let cached = cache[cacheKey] {
+            return cached
+        }
+        guard var text = html, !text.isEmpty else {
+            if let cacheKey { cache[cacheKey] = html }
+            return html
+        }
 
         text = replaceLinks(in: text)
         text = replacePreBlocks(in: text)
@@ -19,7 +27,9 @@ actor MarkdownService {
         text = ensureReferenceSeparation(in: text)
         text = trimEmptyLines(in: text)
         text = stripEmptyCodeLines(in: text)
-        return text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let cacheKey { cache[cacheKey] = trimmed }
+        return trimmed
     }
 
     private func replaceLinks(in text: String) -> String {
