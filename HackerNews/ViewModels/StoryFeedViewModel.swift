@@ -32,12 +32,20 @@ final class StoryFeedViewModel {
     func selectCategory(_ category: StoryFeedCategory) async {
         guard self.category != category else { return }
         self.category = category
-        await refresh()
+        await refresh(resetFeed: true)
     }
 
     // Resets pagination state and fetches the first page.
-    func refresh(isUserInitiated: Bool = false) async {
+    func refresh(resetFeed: Bool = false, isUserInitiated: Bool = false) async {
         await waitForInFlight()
+        if resetFeed {
+            isLoading = true
+            stories = []
+            loadedIDs = []
+            hasMorePages = true
+            currentPage = 0
+            errorMessage = nil
+        }
         let clock = ContinuousClock()
         let start = clock.now
         await loadPage(1)
