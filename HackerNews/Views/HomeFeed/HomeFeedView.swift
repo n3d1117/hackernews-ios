@@ -1,8 +1,6 @@
 import Observation
 import SwiftUI
 import UIKit
-
-// Shows the main Hacker News feed with categories and pagination.
 struct HomeFeedView: View {
     @Environment(\.cardNamespace) private var cardNamespace
     @Environment(\.openURL) private var openURL
@@ -42,7 +40,7 @@ struct HomeFeedView: View {
             }
         }
         .navigationTitle("Hacker News")
-        .navigationSubtitleIfAvailable(categorySubtitle)
+        .navigationSubtitleIfAvailable(viewModel.category.subtitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -78,21 +76,6 @@ struct HomeFeedView: View {
         }
     }
 
-    private var categorySubtitle: String {
-        switch viewModel.category {
-        case .top:
-            "Top Stories"
-        case .new:
-            "New Stories"
-        case .show:
-            "Show HN"
-        case .ask:
-            "Ask HN"
-        case .jobs:
-            "Jobs"
-        }
-    }
-
     private var categoryBinding: Binding<StoryFeedCategory> {
         Binding(
             get: { viewModel.category },
@@ -102,7 +85,6 @@ struct HomeFeedView: View {
         )
     }
 
-    // Attempts to open a link from the clipboard.
     private func pasteLink() {
         guard let clipboard = UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines), !clipboard.isEmpty else {
             pasteError = "Clipboard is empty."
@@ -118,130 +100,6 @@ struct HomeFeedView: View {
     }
 }
 
-// Feed content list with infinite scroll trigger.
-private struct FeedListView: View {
-    @Bindable var viewModel: StoryFeedViewModel
-    let namespace: Namespace.ID?
-
-    var body: some View {
-        LazyVStack(spacing: 14) {
-            ForEach(viewModel.stories) { story in
-                StoryCard(
-                    story: story,
-                    namespace: namespace,
-                    showCommentCount: viewModel.category != .jobs
-                )
-                .onAppear {
-                    Task {
-                        await viewModel.loadMoreIfNeeded(for: story)
-                    }
-                }
-            }
-            if isPaging {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-            }
-        }
-    }
-
-    private var isPaging: Bool {
-        viewModel.isLoading && !viewModel.stories.isEmpty
-    }
-}
-
-// Error placeholder with retry action.
-private struct FeedErrorView: View {
-    let message: String
-    let onRetry: () -> Void
-
-    var body: some View {
-        VStack(spacing: 12) {
-            Text("Could not load stories")
-                .font(.title2.weight(.semibold))
-            Text(message)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-            Button(action: onRetry) {
-                RetryButtonView()
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 8)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-    }
-}
-
-private struct RetryButtonView: View {
-    var body: some View {
-        HStack(spacing: 5) {
-            Image(systemName: "arrow.clockwise")
-                .font(.system(size: 11, weight: .semibold))
-            Text("Retry")
-                .tracking(0.6)
-        }
-        .textCase(.uppercase)
-        .font(.caption2.weight(.semibold))
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .background(
-            Capsule(style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.08),
-                            Color.orange.opacity(0.18)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .overlay(
-                    Capsule(style: .continuous)
-                        .fill(.ultraThinMaterial.opacity(0.65))
-                )
-        )
-        .overlay(
-            Capsule(style: .continuous)
-                .stroke(Color.white.opacity(0.12), lineWidth: 0.8)
-        )
-        .shadow(color: .black.opacity(0.08), radius: 5, y: 3)
-        .foregroundStyle(.primary.opacity(0.72))
-    }
-}
-
-private extension View {
-    @ViewBuilder
-    func navigationSubtitleIfAvailable(_ subtitle: String) -> some View {
-        if #available(iOS 26, *) {
-            navigationSubtitle(subtitle)
-        } else {
-            self
-        }
-    }
-}
-
-// Menu for selecting a feed category.
-private struct CategorySelector: View {
-    let selection: Binding<StoryFeedCategory>
-
-    var body: some View {
-        Menu {
-            Picker("Feed", selection: selection) {
-                ForEach(StoryFeedCategory.allCases) { category in
-                    Label(category.title, systemImage: category.icon)
-                        .tag(category)
-                }
-            }
-        } label: {
-            Image(systemName: "line.3.horizontal.decrease")
-                .font(.headline.weight(.semibold))
-        }
-    }
-}
-
-// Card summarizing a story in the feed.
 struct StoryCard: View, Equatable {
     @Environment(\.seenStoriesStore) private var seenStories
     let story: Story

@@ -17,6 +17,16 @@ enum StoryFeedCategory: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    var subtitle: String {
+        switch self {
+        case .top: "Top Stories"
+        case .new: "New Stories"
+        case .show: "Show HN"
+        case .ask: "Ask HN"
+        case .jobs: "Jobs"
+        }
+    }
+
     var icon: String {
         switch self {
         case .top: "chart.bar"
