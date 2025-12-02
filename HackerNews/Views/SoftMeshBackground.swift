@@ -7,27 +7,26 @@ struct SoftMeshBackground: View {
     var overlayBottomOpacity: Double = 0.88
     var intensity: Double = 0.3
 
-    @State private var phase = Double.random(in: 0...500)
+    private var phase: Double {
+        Double(abs(seed % 997))
+    }
 
     var body: some View {
-        mesh
+        meshLayer(at: phase)
             .overlay(overlay)
             .ignoresSafeArea()
     }
 
-    private var mesh: some View {
-        TimelineView(.animation) { timeline in
-            let time = (timeline.date.timeIntervalSinceReferenceDate * 0.48) + phase
-            MeshGradient(
-                width: 3,
-                height: 3,
-                points: points(at: time),
-                colors: palette
-            )
-            .blur(radius: 84)
-            .scaleEffect(1.14)
-            .opacity(intensity)
-        }
+    private func meshLayer(at time: Double) -> some View {
+        MeshGradient(
+            width: 3,
+            height: 3,
+            points: points(at: time),
+            colors: palette
+        )
+        .blur(radius: 84)
+        .scaleEffect(1.14)
+        .opacity(intensity)
     }
 
     private var overlay: some View {
