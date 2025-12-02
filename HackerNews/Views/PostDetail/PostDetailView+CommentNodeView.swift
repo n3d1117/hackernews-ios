@@ -45,11 +45,13 @@ extension PostDetailView {
             .onTapGesture {
                 toggleCollapse()
             }
-            .onAppear {
-                flashHighlightIfNeeded()
+            .taskOnce {
+                await flashHighlightIfNeeded()
             }
             .onChange(of: isHighlighted) { _, _ in
-                flashHighlightIfNeeded()
+                Task {
+                    await flashHighlightIfNeeded()
+                }
             }
         }
 
@@ -189,16 +191,13 @@ extension PostDetailView {
         }
 
         // Briefly flashes a highlight for linked comments.
-        private func flashHighlightIfNeeded() {
+        @MainActor
+        private func flashHighlightIfNeeded() async {
             guard isHighlighted, !hasFlashedHighlight else { return }
             hasFlashedHighlight = true
             isHighlightVisible = true
-            Task {
-                try? await Task.sleep(for: .milliseconds(2000))
-                await MainActor.run {
-                    isHighlightVisible = false
-                }
-            }
+            try? await Task.sleep(for: .milliseconds(2000))
+            isHighlightVisible = false
         }
     }
 }

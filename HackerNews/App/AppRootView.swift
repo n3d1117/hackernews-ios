@@ -23,8 +23,10 @@ struct AppRootView: View {
             .sheet(item: $coordinator.safariItem) { item in
                 SafariView(url: item.url)
             }
-            .onAppear {
-                coordinator.attach(router: router)
+            .taskOnce {
+                await MainActor.run {
+                    coordinator.attach(router: router)
+                }
             }
             .onOpenURL { url in
                 _ = coordinator.open(url)
