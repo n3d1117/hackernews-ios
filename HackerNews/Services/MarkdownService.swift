@@ -18,6 +18,7 @@ actor MarkdownService {
         text = decodeEntities(in: text)
         text = ensureReferenceSeparation(in: text)
         text = trimEmptyLines(in: text)
+        text = stripEmptyCodeLines(in: text)
         return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
@@ -31,8 +32,35 @@ actor MarkdownService {
 
     private func replacePreBlocks(in text: String) -> String {
         replace(text, pattern: #"<pre><code>(.*?)</code></pre>"#, options: [.dotMatchesLineSeparators]) { match in
-            let code = match[1]
+            let code = normalizeCodeBlock(match[1])
             return "```\n\(code)\n```"
+        }
+    }
+
+    private func normalizeCodeBlock(_ code: String) -> String {
+        var lines = code.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        trimEmptyEdges(&lines)
+
+        guard let firstLine = lines.first else { return "" }
+        let baseline = firstLine.prefix(while: { $0 == " " || $0 == "\t" }).count
+
+        let dedented = lines.map { line -> String in
+            let indent = line.prefix(while: { $0 == " " || $0 == "\t" }).count
+            let drop = min(indent, baseline)
+            return String(line.dropFirst(drop))
+        }
+
+        let cleaned = dedented.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        return cleaned.joined(separator: "\n")
+    }
+
+    private func trimEmptyEdges(_ lines: inout [String]) {
+        while let first = lines.first, first.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            lines.removeFirst()
+        }
+
+        while let last = lines.last, last.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            lines.removeLast()
         }
     }
 
@@ -120,6 +148,16 @@ actor MarkdownService {
         return lines.joined(separator: "\n")
     }
 
+    private func stripEmptyCodeLines(in text: String) -> String {
+        let pattern = #"```[\n]?([\s\S]*?)[\n]?```"#
+        return replace(text, pattern: pattern, options: [.dotMatchesLineSeparators]) { match in
+            let block = match[1]
+            let lines = block.split(separator: "\n", omittingEmptySubsequences: false)
+            let cleaned = lines.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            return "```\n\(cleaned.joined(separator: "\n"))\n```"
+        }
+    }
+
     private func trimEmptyLines(in text: String) -> String {
         var lines = text.split(separator: "\n", omittingEmptySubsequences: false)
         while let first = lines.first, first.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -152,5 +190,20 @@ actor MarkdownService {
             }
         }
         return result
+    }
+}
+
+private extension Collection where Element == Int {
+    func mode() -> Int? {
+        var counts: [Int: Int] = [:]
+        for value in self {
+            counts[value, default: 0] += 1
+        }
+        return counts.max { lhs, rhs in
+            if lhs.value == rhs.value {
+                return lhs.key > rhs.key
+            }
+            return lhs.value < rhs.value
+        }?.key
     }
 }
