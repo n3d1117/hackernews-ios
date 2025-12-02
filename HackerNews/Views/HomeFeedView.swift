@@ -256,36 +256,12 @@ struct StoryCard: View {
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(.primary)
-                .background(cardBackground)
-                .overlay(cardStroke)
+                .softCardStyle(accent: accentColor)
         }
         .buttonStyle(.plain)
         .contextMenu {
             StoryContextMenu(story: story)
         }
-    }
-
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [
-                        Color(.systemBackground).opacity(0.4),
-                        accentColor.opacity(0.08)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(.ultraThinMaterial.opacity(0.55))
-            )
-    }
-
-    private var cardStroke: some View {
-        RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
     }
 
     @ViewBuilder

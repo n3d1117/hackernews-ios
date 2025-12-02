@@ -12,8 +12,7 @@ struct PostHeaderCard: View {
             StoryHeaderView(story: story, content: content)
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(cardBackground)
-                .overlay(cardStroke)
+                .softCardStyle(accent: meshTint)
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .overlay(alignment: .bottomTrailing) {
                     if story.url != nil {
@@ -34,29 +33,6 @@ struct PostHeaderCard: View {
         } else {
             content()
         }
-    }
-
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [
-                        Color(.systemBackground).opacity(0.4),
-                        meshTint.opacity(0.14)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(.ultraThinMaterial.opacity(0.55))
-            )
-    }
-
-    private var cardStroke: some View {
-        RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
     }
 
     private var readButton: some View {

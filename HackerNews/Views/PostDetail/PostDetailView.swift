@@ -8,6 +8,7 @@ struct PostDetailView: View {
     @Environment(\.seenStoriesStore) private var seenStories
 
     @State private var viewModel: PostDetailViewModel
+    @State private var didScrollToAnchor = false
 
     init(story: Story, commentID: Int?, service: any StoryThreadService) {
         _viewModel = State(initialValue: PostDetailViewModel(story: story, commentID: commentID, service: service))
@@ -17,9 +18,10 @@ struct PostDetailView: View {
         ZStack {
             SoftMeshBackground(
                 seed: viewModel.story.id,
-                overlayTopOpacity: 0.98,
-                overlayBottomOpacity: 0.96,
-                intensity: 0.18
+                baseHue: meshHue,
+                overlayTopOpacity: 0.96,
+                overlayBottomOpacity: 0.9,
+                intensity: 0.22
             )
 
             ScrollViewReader { proxy in
@@ -81,7 +83,9 @@ struct PostDetailView: View {
 
     // Scrolls to the highlighted comment when it becomes available.
     private func scrollToAnchorIfNeeded(_ proxy: ScrollViewProxy) {
-        guard let targetID = viewModel.anchorTarget() else { return }
+        guard !didScrollToAnchor, let targetID = viewModel.commentID else { return }
+        guard viewModel.containsComment(withID: targetID) else { return }
+        didScrollToAnchor = true
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(500))
             withAnimation(.easeInOut(duration: 0.4)) {
@@ -98,7 +102,11 @@ struct PostDetailView: View {
     }
 
     private var meshTint: Color {
-        Color(hue: Double(abs(viewModel.story.id % 360)) / 360.0, saturation: 0.2, brightness: 0.94)
+        Color(hue: meshHue, saturation: 0.25, brightness: 0.94)
+    }
+
+    private var meshHue: Double {
+        Double(abs(viewModel.story.id % 360)) / 360.0
     }
 
     private var bookmarkButton: some View {

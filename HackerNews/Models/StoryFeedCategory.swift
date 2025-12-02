@@ -9,46 +9,31 @@ enum StoryFeedCategory: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .top:
-            "Top"
-        case .new:
-            "New"
-        case .show:
-            "Show"
-        case .ask:
-            "Ask"
-        case .jobs:
-            "Jobs"
+        case .top: "Top"
+        case .new: "New"
+        case .show: "Show"
+        case .ask: "Ask"
+        case .jobs: "Jobs"
         }
     }
 
     var icon: String {
         switch self {
-        case .top:
-            "chart.bar"
-        case .new:
-            "clock.arrow.circlepath"
-        case .show:
-            "sparkles"
-        case .ask:
-            "text.bubble"
-        case .jobs:
-            "briefcase"
+        case .top: "chart.bar"
+        case .new: "clock.arrow.circlepath"
+        case .show: "sparkles"
+        case .ask: "text.bubble"
+        case .jobs: "briefcase"
         }
     }
 
     var path: String {
         switch self {
-        case .top:
-            "news"
-        case .new:
-            "newest"
-        case .show:
-            "show"
-        case .ask:
-            "ask"
-        case .jobs:
-            "jobs"
+        case .top: "news"
+        case .new: "newest"
+        case .show: "show"
+        case .ask: "ask"
+        case .jobs: "jobs"
         }
     }
 }
