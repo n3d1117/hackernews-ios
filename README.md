@@ -5,6 +5,7 @@
 [![xcode-version](https://img.shields.io/badge/Xcode-16+-blue.svg)](https://developer.apple.com/xcode/)
 
 Personal SwiftUI toy project used to experiment with:
+- OpenAI's Codex for agentic coding (exploring ideas + prototype implementation)
 - iOS 26 design language
 - SwiftUI MeshGradient-based soft backgrounds
 - The _excellent_ [MarkdownUI](https://github.com/gonzalezreal/MarkdownUI) library

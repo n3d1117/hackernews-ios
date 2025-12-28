@@ -7,7 +7,7 @@
 The root hosts `HackerNews.xcodeproj` plus Swift sources under `HackerNews/`, with entry points in `App/HackerNewsApp.swift` and `App/AppRootView.swift`. As the code base grows, introduce sibling folders (`App/`, `Models/`, `Services/`, `Utilities/`, `ViewModels/`, `Views/`, `Tests/`) within `HackerNews/`. Keep assets in `HackerNews/Assets.xcassets` and park preview scaffolding under dedicated `Previews/` groups.
 
 ## Routing
-For routing inside the app, we use https://github.com/n3d1117/Routing (dependency already imported). Read usage at /Users/ned/Developer/Runtime/README.md
+For routing inside the app, we use https://github.com/n3d1117/Routing (dependency already imported)
 
 ## Coding Style & Naming Conventions
 Prefer concise, tidy, comment-free Swift that stays production ready. Use four-space indentation, `UpperCamelCase` types, and `lowerCamelCase` members. Keep view structs focused, extract subviews quickly, and rely on naming and structure—not inline commentary—to communicate intent. Minimize SwiftUI redraws and optimize for efficiency and smooth scrolling. Favor standalone view structs over computed `some View` vars when breaking out subviews to help SwiftUI diffing.
