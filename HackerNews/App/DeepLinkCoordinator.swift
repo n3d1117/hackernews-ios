@@ -13,6 +13,8 @@ struct SafariItem: Identifiable {
 @Observable
 final class DeepLinkCoordinator {
     @ObservationIgnored private let api: any StoryThreadService
+    @ObservationIgnored private var activeTask: Task<Void, Never>?
+    @ObservationIgnored private var activeToken: UUID?
 
     var router: Router<AppRoute>?
     var safariItem: SafariItem?
@@ -35,24 +37,40 @@ final class DeepLinkCoordinator {
     // Handles incoming URLs and dispatches app navigation.
     func open(_ url: URL) -> OpenURLAction.Result {
         safariItem = nil
+        activeTask?.cancel()
+        activeTask = nil
+        activeToken = nil
         guard let payload = DeepLinkPayload(url: url) else {
+            isLoading = false
             safariItem = SafariItem(url: url)
             return .handled
         }
         isLoading = true
-        Task { await handle(payload) }
+        let token = UUID()
+        activeToken = token
+        activeTask = Task { [weak self] in
+            await self?.handle(payload, token: token)
+        }
         return .handled
     }
 
     // Resolves a deep link payload into a navigation action or Safari fallback.
-    private func handle(_ payload: DeepLinkPayload) async {
-        defer { isLoading = false }
+    private func handle(_ payload: DeepLinkPayload, token: UUID) async {
+        defer { finish(token: token) }
         do {
             let thread = try await api.storyThread(id: payload.storyID)
+            guard !Task.isCancelled, token == activeToken else { return }
             router?.navigate(to: .post(thread.story, commentID: payload.commentID))
         } catch {
+            guard !Task.isCancelled, token == activeToken else { return }
             safariItem = SafariItem(url: payload.canonicalURL)
         }
+    }
+
+    private func finish(token: UUID) {
+        guard token == activeToken else { return }
+        isLoading = false
+        activeTask = nil
     }
 }
 

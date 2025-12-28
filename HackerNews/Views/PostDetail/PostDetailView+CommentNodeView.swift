@@ -20,7 +20,11 @@ extension PostDetailView {
 
         var body: some View {
             VStack(alignment: .leading, spacing: PostDetailView.commentSpacing) {
-                commentBlock
+                Button(action: toggleCollapse) {
+                    commentBlock
+                }
+                .buttonStyle(.plain)
+                .contentShape(Rectangle())
 
                 if !isCollapsed, !comment.children.isEmpty {
                     VStack(alignment: .leading, spacing: PostDetailView.commentSpacing) {
@@ -41,10 +45,6 @@ extension PostDetailView {
             .id(comment.id)
             .padding(.leading, depth == 0 ? 0 : 14)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                toggleCollapse()
-            }
             .taskOnce {
                 await flashHighlightIfNeeded()
             }

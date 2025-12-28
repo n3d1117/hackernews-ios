@@ -1,14 +1,37 @@
 import Foundation
 
 actor MarkdownService {
-    private var cache: [String: String?] = [:]
+    private enum CacheValue {
+        case none
+        case some(String)
+
+        var value: String? {
+            switch self {
+            case .none:
+                return nil
+            case let .some(value):
+                return value
+            }
+        }
+    }
+
+    private struct RegexKey: Hashable {
+        let pattern: String
+        let options: UInt
+    }
+
+    private var cache: [String: CacheValue] = [:]
+    private var cacheOrder: [String] = []
+    private var regexCache: [RegexKey: NSRegularExpression] = [:]
+    private let cacheLimit = 500
 
     func convert(_ html: String?, cacheKey: String? = nil) -> String? {
         if let cacheKey, let cached = cache[cacheKey] {
-            return cached
+            touchCache(key: cacheKey)
+            return cached.value
         }
         guard var text = html, !text.isEmpty else {
-            if let cacheKey { cache[cacheKey] = html }
+            if let cacheKey { storeCache(key: cacheKey, value: html) }
             return html
         }
 
@@ -28,7 +51,7 @@ actor MarkdownService {
         text = trimEmptyLines(in: text)
         text = stripEmptyCodeLines(in: text)
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let cacheKey { cache[cacheKey] = trimmed }
+        if let cacheKey { storeCache(key: cacheKey, value: trimmed) }
         return trimmed
     }
 
@@ -179,8 +202,36 @@ actor MarkdownService {
         return lines.joined(separator: "\n")
     }
 
+    private func touchCache(key: String) {
+        guard let index = cacheOrder.firstIndex(of: key) else { return }
+        cacheOrder.remove(at: index)
+        cacheOrder.append(key)
+    }
+
+    private func storeCache(key: String, value: String?) {
+        cache[key] = value.map(CacheValue.some) ?? CacheValue.none
+        if let index = cacheOrder.firstIndex(of: key) {
+            cacheOrder.remove(at: index)
+        }
+        cacheOrder.append(key)
+        while cacheOrder.count > cacheLimit {
+            let removedKey = cacheOrder.removeFirst()
+            cache.removeValue(forKey: removedKey)
+        }
+    }
+
+    private func regex(for pattern: String, options: NSRegularExpression.Options) -> NSRegularExpression? {
+        let key = RegexKey(pattern: pattern, options: options.rawValue)
+        if let cached = regexCache[key] {
+            return cached
+        }
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: options) else { return nil }
+        regexCache[key] = regex
+        return regex
+    }
+
     private func replace(_ text: String, pattern: String, options: NSRegularExpression.Options = [], transform: ([String]) -> String) -> String {
-        guard let regex = try? NSRegularExpression(pattern: pattern, options: options) else { return text }
+        guard let regex = regex(for: pattern, options: options) else { return text }
         let range = NSRange(text.startIndex..<text.endIndex, in: text)
         var result = text
         let matches = regex.matches(in: text, options: [], range: range).reversed()
