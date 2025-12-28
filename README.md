@@ -5,9 +5,9 @@
 [![xcode-version](https://img.shields.io/badge/Xcode-16+-blue.svg)](https://developer.apple.com/xcode/)
 
 Personal SwiftUI toy project used to experiment with:
-- iOS 26 design language experiments
+- iOS 26 design language
 - SwiftUI MeshGradient-based soft backgrounds
-- The excellent [MarkdownUI](https://github.com/gonzalezreal/MarkdownUI) rendering (for comments)
+- The _excellent_ [MarkdownUI](https://github.com/gonzalezreal/MarkdownUI) library
 - SwiftUI zoom transitions with matched sources
 - Deep link handling (`hn://` + pasting HN URLs in-app)
 - Dependency injection via `AppDependencies` + environment keys
