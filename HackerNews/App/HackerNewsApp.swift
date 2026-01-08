@@ -23,7 +23,6 @@ struct HackerNewsApp: App {
                 }
                 .animation(.easeInOut(duration: 0.2), value: dependencies.coordinator.isLoading)
                 .allowsHitTesting(!dependencies.coordinator.isLoading)
-                .legacyOrangeTint()
         }
     }
 

@@ -7,6 +7,8 @@ extension View {
             .environment(\.dependencies, dependencies)
             .environment(\.bookmarksStore, dependencies.bookmarksStore)
             .environment(\.seenStoriesStore, dependencies.seenStoriesStore)
+            .environment(\.summaryStore, dependencies.summaryStore)
+            .environment(\.summaryService, dependencies.summaryService)
             .environment(\.storyService, dependencies.api)
             .environment(\.openURL, dependencies.coordinator.openURLAction)
     }

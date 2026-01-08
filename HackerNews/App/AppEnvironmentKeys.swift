@@ -26,6 +26,16 @@ extension EnvironmentValues {
     @Entry var seenStoriesStore: SeenStoriesStore = SeenStoriesStore()
 }
 
+// Summary store scoped to the current scene.
+extension EnvironmentValues {
+    @Entry var summaryStore: SummaryStore = SummaryStore()
+}
+
+// Summary service used for story summarization.
+extension EnvironmentValues {
+    @Entry var summaryService: any SummaryService = SummaryServiceFactory.make()
+}
+
 // Story service used for loading full threads.
 extension EnvironmentValues {
     @Entry var storyService: any StoryThreadService = HackerNewsAPI()

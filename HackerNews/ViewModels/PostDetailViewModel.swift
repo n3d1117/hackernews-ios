@@ -13,6 +13,8 @@ final class PostDetailViewModel {
     var comments: [Comment] = []
     var isLoading = false
     var errorMessage: String?
+    var summary: String?
+    var isSummarizing = false
 
     init(story: Story, commentID: Int?, service: any StoryThreadService) {
         self.story = story
@@ -34,6 +36,31 @@ final class PostDetailViewModel {
         } catch {
             comments = []
             errorMessage = error.localizedDescription
+        }
+    }
+
+    // Loads a cached summary if one exists.
+    func loadCachedSummary(from store: SummaryStore) {
+        if let cached = store.summary(for: story.id) {
+            summary = cached
+        }
+    }
+
+    // Summarizes the story content via the provided service.
+    func summarize(using store: SummaryStore, service: any SummaryService) async {
+        guard !isSummarizing else { return }
+        if let cached = store.summary(for: story.id) {
+            summary = cached
+            return
+        }
+        guard let url = story.url else { return }
+        guard service.isAvailable else { return }
+        isSummarizing = true
+        defer { isSummarizing = false }
+
+        if let generated = await service.summarize(url: url, title: story.title) {
+            summary = generated
+            await store.save(generated, for: story.id)
         }
     }
 

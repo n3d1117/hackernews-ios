@@ -1,5 +1,5 @@
 {
-  "originHash" : "9da03171688ef7067cdb8da0fbb6eb4ffbd31954148514ec90ce899feab55b22",
+  "originHash" : "2ecbcbcb640416361103e4cf918c82b8887b42e5da124aa22666b8ed7cfcc632",
   "pins" : [
     {
       "identity" : "networkimage",
@@ -35,6 +35,15 @@
       "state" : {
         "revision" : "5f613358148239d0292c0cef674a3c2314737f9e",
         "version" : "2.4.1"
+      }
+    },
+    {
+      "identity" : "swift-readability",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Ryu0118/swift-readability",
+      "state" : {
+        "revision" : "961453ade5b0fecdc5f3b0d562071cfc4b0603ea",
+        "version" : "0.3.0"
       }
     }
   ],

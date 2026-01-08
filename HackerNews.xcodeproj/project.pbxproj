@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8137DB5D2F10175D006B6F98 /* Readability in Frameworks */ = {isa = PBXBuildFile; productRef = 8137DB5C2F10175D006B6F98 /* Readability */; };
 		815494272ED2661B00CC67A8 /* Routing in Frameworks */ = {isa = PBXBuildFile; productRef = 815494262ED2661B00CC67A8 /* Routing */; };
 		815494672ED283F200CC67A8 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 815494662ED283F200CC67A8 /* MarkdownUI */; };
 /* End PBXBuildFile section */
@@ -58,6 +59,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				815494272ED2661B00CC67A8 /* Routing in Frameworks */,
+				8137DB5D2F10175D006B6F98 /* Readability in Frameworks */,
 				815494672ED283F200CC67A8 /* MarkdownUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -112,6 +114,7 @@
 			packageProductDependencies = (
 				815494262ED2661B00CC67A8 /* Routing */,
 				815494662ED283F200CC67A8 /* MarkdownUI */,
+				8137DB5C2F10175D006B6F98 /* Readability */,
 			);
 			productName = HackerNews;
 			productReference = 8133B8BA2EA2EB0200B06D01 /* HackerNews.app */;
@@ -171,6 +174,7 @@
 			packageReferences = (
 				815494252ED2661B00CC67A8 /* XCRemoteSwiftPackageReference "Routing" */,
 				815494652ED283F200CC67A8 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
+				8137DB5B2F10175D006B6F98 /* XCRemoteSwiftPackageReference "swift-readability" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8133B8BB2EA2EB0200B06D01 /* Products */;
@@ -369,7 +373,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.7;
@@ -415,7 +419,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.7;
@@ -514,6 +518,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		8137DB5B2F10175D006B6F98 /* XCRemoteSwiftPackageReference "swift-readability" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Ryu0118/swift-readability";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.3.0;
+			};
+		};
 		815494252ED2661B00CC67A8 /* XCRemoteSwiftPackageReference "Routing" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "git@github.com:n3d1117/Routing.git";
@@ -533,6 +545,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		8137DB5C2F10175D006B6F98 /* Readability */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8137DB5B2F10175D006B6F98 /* XCRemoteSwiftPackageReference "swift-readability" */;
+			productName = Readability;
+		};
 		815494262ED2661B00CC67A8 /* Routing */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 815494252ED2661B00CC67A8 /* XCRemoteSwiftPackageReference "Routing" */;
