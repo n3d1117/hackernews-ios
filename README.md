@@ -8,12 +8,12 @@ Personal SwiftUI toy project used to experiment with:
 - OpenAI's Codex for agentic coding (exploring ideas + prototype implementation)
 - iOS 26 design language
 - SwiftUI MeshGradient-based soft backgrounds
-- The _excellent_ [MarkdownUI](https://github.com/gonzalezreal/MarkdownUI) library
+- The _excellent_ [MarkdownUI](https://github.com/gonzalezreal/MarkdownUI) and [swift-readability](https://github.com/Ryu0118/swift-readability) libraries
 - SwiftUI zoom transitions with matched sources
 - Deep link handling (`hn://` + pasting HN URLs in-app)
 - Dependency injection via `AppDependencies` + environment keys
 - iOS 26 navigation subtitle
-- Offline, on-device story summaries using Apple Intelligence (FoundationModels), with reader-mode cleanup, chunked prompts to stay within context, and a plain-HTML fallback when reader mode is unavailable
+- Offline, on-device story summaries using Apple Intelligence (FoundationModels)
 
 ## Screenshots
 | Home | Story | AI Summary |
