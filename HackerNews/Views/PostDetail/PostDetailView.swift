@@ -12,6 +12,7 @@ struct PostDetailView: View {
 
     @State private var viewModel: PostDetailViewModel
     @State private var didScrollToAnchor = false
+    @State private var didRequestSummary = false
 
     init(story: Story, commentID: Int?, service: any StoryThreadService) {
         _viewModel = State(initialValue: PostDetailViewModel(story: story, commentID: commentID, service: service))
@@ -61,7 +62,7 @@ struct PostDetailView: View {
                             scrollToTop: { scrollToTop(proxy) }
                         )
                     }
-                    .animation(.default, value: viewModel.isSummarizing)
+                    .animation(.spring(response: 0.28, dampingFraction: 0.88), value: shouldAnimateSummary)
                     .padding(.horizontal)
                     .padding(.top, 16)
                 }
@@ -191,11 +192,11 @@ struct PostDetailView: View {
                     lineWidth: 1.5
                 )
         )
-        .shadow(color: .purple.opacity(0.35), radius: 8, x: 0, y: 0)
-        .shadow(color: .purple.opacity(0.15), radius: 18, x: 0, y: 0)
+        .shadow(color: .purple.opacity(0.2), radius: 10, x: 0, y: 6)
         .cornerRadius(16)
         .contentShape(Rectangle())
-        .animation(.default, value: viewModel.isSummarizing)
+        .transition(.move(edge: .top).combined(with: .opacity))
+        .animation(.spring(response: 0.28, dampingFraction: 0.88), value: viewModel.isSummarizing || viewModel.summary != nil)
     }
 
     private var canSummarize: Bool {
@@ -204,8 +205,13 @@ struct PostDetailView: View {
         return true
     }
 
+    private var shouldAnimateSummary: Bool {
+        didRequestSummary && (viewModel.isSummarizing || viewModel.summary != nil)
+    }
+
     private func startSummarize() {
         Task {
+            didRequestSummary = true
             await viewModel.summarize(using: summaries, service: summaryService)
         }
     }
