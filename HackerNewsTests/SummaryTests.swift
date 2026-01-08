@@ -92,7 +92,7 @@ private final class StubSummaryService: SummaryService {
         self.result = result
     }
 
-    func summarize(url: URL) async -> String? {
+    func summarize(url: URL, title: String?) async -> String? {
         calls += 1
         return result
     }
