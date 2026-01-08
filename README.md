@@ -18,7 +18,7 @@ Personal SwiftUI toy project used to experiment with:
 ## Screenshots
 | Home | Story | AI Summary |
 | --- | --- | --- |
-| ![Home](https://github.com/user-attachments/assets/4be80a72-546f-4bdf-b8f8-6b98d45f1441) | ![Story](https://github.com/user-attachments/assets/36eae89e-7474-470c-99a0-48dcc921d7e6) | _Coming soon_ |
+| ![Home](https://github.com/user-attachments/assets/83966d8a-9fe7-4a2d-8cbc-f866a3b8ffdd) | ![Story](https://github.com/user-attachments/assets/03da4ae7-94f7-482c-b197-97123022a7f4) | ![AI Summary](https://github.com/user-attachments/assets/5483ea29-93d8-4d5e-b059-a0fadc313d31) |
 
 ## Backend
 The backend implementation is not included. The app is wired to a private API; update the base URL in `HackerNews/Services/HackerNewsAPI.swift` to point at your own service.
