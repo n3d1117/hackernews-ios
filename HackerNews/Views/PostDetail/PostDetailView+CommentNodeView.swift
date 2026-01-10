@@ -20,11 +20,13 @@ extension PostDetailView {
 
         var body: some View {
             VStack(alignment: .leading, spacing: PostDetailView.commentSpacing) {
-                Button(action: toggleCollapse) {
+                HStack(spacing: 0) {
                     commentBlock
+                    Spacer(minLength: 0)
                 }
-                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
+                .onTapGesture(perform: toggleCollapse)
 
                 if !isCollapsed, !comment.children.isEmpty {
                     VStack(alignment: .leading, spacing: PostDetailView.commentSpacing) {
@@ -58,29 +60,18 @@ extension PostDetailView {
         private var metaText: Text? {
             switch (comment.author, timestamp) {
             case let (author?, time?):
-                styledAuthor(author) + separatorText + relativeTimeText(time)
+                return Text(
+                    "\(Text(author).foregroundStyle(.secondary)) \(Text("\u{00b7}").foregroundStyle(.tertiary)) \(Text(time, format: .relative(presentation: .numeric, unitsStyle: .narrow)).foregroundStyle(.tertiary))"
+                )
             case let (author?, nil):
-                styledAuthor(author)
+                return Text(author)
+                    .foregroundStyle(.secondary)
             case let (nil, time?):
-                relativeTimeText(time)
+                return Text(time, format: .relative(presentation: .numeric, unitsStyle: .narrow))
+                    .foregroundStyle(.tertiary)
             default:
-                nil
+                return nil
             }
-        }
-
-        private func styledAuthor(_ author: String) -> Text {
-            Text(author)
-                .foregroundStyle(.secondary)
-        }
-
-        private var separatorText: Text {
-            Text(" \u{00b7} ")
-                .foregroundStyle(.tertiary)
-        }
-
-        private func relativeTimeText(_ date: Date) -> Text {
-            Text(date, format: .relative(presentation: .numeric, unitsStyle: .narrow))
-                .foregroundStyle(.tertiary)
         }
 
         private var timestamp: Date? {

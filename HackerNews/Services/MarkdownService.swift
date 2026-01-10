@@ -27,8 +27,14 @@ actor MarkdownService {
 
     func convert(_ html: String?, cacheKey: String? = nil) -> String? {
         if let cacheKey, let cached = cache[cacheKey] {
-            touchCache(key: cacheKey)
-            return cached.value
+            if case .some = cached {
+                touchCache(key: cacheKey)
+                return cached.value
+            }
+            if html == nil || html?.isEmpty == true {
+                touchCache(key: cacheKey)
+                return cached.value
+            }
         }
         guard var text = html, !text.isEmpty else {
             if let cacheKey { storeCache(key: cacheKey, value: html) }

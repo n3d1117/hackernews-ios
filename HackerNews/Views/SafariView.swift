@@ -6,7 +6,7 @@ struct SafariView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> SFSafariViewController {
         let configuration = SFSafariViewController.Configuration()
-        configuration.entersReaderIfAvailable = true
+        configuration.entersReaderIfAvailable = false
         return SFSafariViewController(url: url, configuration: configuration)
     }
 

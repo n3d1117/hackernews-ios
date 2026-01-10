@@ -42,7 +42,7 @@ extension PostDetailView {
         }
 
         private var commentsList: some View {
-            VStack(alignment: .leading, spacing: PostDetailView.commentSpacing) {
+            LazyVStack(alignment: .leading, spacing: PostDetailView.commentSpacing) {
                 ForEach(Array(viewModel.comments.enumerated()), id: \.element.id) { index, comment in
                     if index > 0 {
                         Divider()

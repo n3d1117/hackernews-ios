@@ -46,7 +46,7 @@ struct HackerNewsAPI: FrontPageService, StoryThreadService {
                 Story(
                     id: item.id,
                     title: item.title,
-                    url: item.url,
+                    url: normalizedURL(item.url),
                     imageURL: item.imageURL,
                     domain: item.domain,
                     content: content,
@@ -70,7 +70,7 @@ struct HackerNewsAPI: FrontPageService, StoryThreadService {
         let story = Story(
             id: item.id,
             title: item.title,
-            url: item.url,
+            url: normalizedURL(item.url),
             imageURL: item.imageURL,
             domain: item.domain,
             content: content,
@@ -81,6 +81,14 @@ struct HackerNewsAPI: FrontPageService, StoryThreadService {
             type: item.type
         )
         return StoryThread(story: story, comments: comments)
+    }
+
+    private func normalizedURL(_ url: URL?) -> URL? {
+        guard let url else { return nil }
+        guard let scheme = url.scheme, let host = url.host, !scheme.isEmpty, !host.isEmpty else {
+            return nil
+        }
+        return url
     }
 
     // Recursively maps API comments into domain models while pruning empties.

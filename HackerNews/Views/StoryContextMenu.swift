@@ -4,6 +4,7 @@ import UIKit
 // Provides quick actions for a story card.
 struct StoryContextMenu: View {
     @Environment(\.openURL) private var openURL
+    @Environment(\.dependencies) private var dependencies
     @Environment(\.bookmarksStore) private var bookmarks
     @Environment(\.seenStoriesStore) private var seenStories
     let story: Story
@@ -20,7 +21,7 @@ struct StoryContextMenu: View {
 
         Button {
             seenStories.markSeenAsync(story)
-            openURL(safariURL)
+            openStory()
         } label: {
             Label("Open Story", systemImage: "safari")
         }
@@ -48,6 +49,24 @@ struct StoryContextMenu: View {
 
     private var safariURL: URL {
         story.url ?? hnURL
+    }
+
+    private func openStory() {
+        let url = safariURL
+        if shouldForceExternalSafari(url: url) {
+            dependencies.coordinator.safariItem = SafariItem(url: url)
+        } else {
+            openURL(url)
+        }
+    }
+
+    private func shouldForceExternalSafari(url: URL) -> Bool {
+        guard let host = url.host?.lowercased() else { return false }
+        let isHackerNews = host == "news.ycombinator.com" || host == "news.ycombinator.com."
+        if story.url == nil {
+            return true
+        }
+        return isHackerNews && url.path == "/item"
     }
 
     private var storyLinkString: String {
